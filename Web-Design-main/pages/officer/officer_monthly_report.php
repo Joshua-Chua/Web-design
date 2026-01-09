@@ -32,6 +32,7 @@ if ($result) {
     <title>Monthly Energy Report</title>
     <link rel = "stylesheet" href = "../../assets/css/style.css">
     <link rel = "stylesheet" href = "../../assets/css/officer/officer_main.css">
+    <link rel = "stylesheet" href = "../../assets/css/officer/officer_profile.css">
     <style>
         .report-page-container {
             padding: 20px;
@@ -119,8 +120,10 @@ if ($result) {
         <a href = "<?php echo $home_link; ?>" class = "home-btn">
             <img src = "../../assets/images/home-icon.png" class = "home-icon" alt = "Home">
         </a>
-        <span class = "breadcrumb-separator">/</span>
-        <span class = "breadcrumb-link">Monthly Report</span>
+        <span class = "breadcrumb">
+            <span class = "breadcrumb-separator">/</span>
+            <a href = "officer_monthly_report.php" class = "breadcrumb-link">Monthly Report</a>
+        </span>
     </div>
 
     <div class = "topbar-right">

@@ -56,6 +56,7 @@ if ($role == 'officer') {
     <title>APU Energy Sustainability - Smart Tips</title>
     <link rel = "stylesheet" href = "../../assets/css/style.css">
     <link rel = "stylesheet" href = "../../assets/css/officer/officer_main.css">
+    <link rel = "stylesheet" href = "../../assets/css/officer/officer_profile.css">
     <style>
         .tips-container {
             display: grid;

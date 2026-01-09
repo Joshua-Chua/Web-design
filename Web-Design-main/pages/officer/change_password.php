@@ -54,9 +54,9 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'officer') {
 <div class = "dashboard">
     <div class = "sidebar">
         <a href = "officer_main.php" class = "active">Main Menu</a>
-        <a href = "#">Monthly Report</a>
+        <a href = "officer_monthly_report.php">Monthly Report</a>
         <a href = "#">Events</a>
-        <a href = "#">Smart Tips</a>
+        <a href = "../../pages/student/browse_tips.php">Smart Tips</a>
         <a href = "officer_quiz.php">Quiz</a>
         <a href = "#">Forum</a>
         <a href = "../auth/logout.php">Logout</a>
