@@ -23,13 +23,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $user = mysqli_fetch_assoc($result);
 
         if (password_verify($password, $user['password'])) {
-            // Rset counter once success
+            // Reset counter once success
             $_SESSION['login_attempts'] = 0;
 
             // Set session variables
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'];
+
+            // Store user data for streak update
+            $user_id = $user['user_id'];
+            $user_role = $user['role'];
+
+            // Update login streak for students
+            if ($user_role === 'student') {
+                // Update login streak
+                require_once '../../system/login_streak_helper.php';
+                $streak_result = updateStudentLoginStreak($conn, $user_id, $user_role);
+            }
 
             // Redirect based on role
             switch($user['role']) {

@@ -1,29 +1,42 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 session_start();
 require '../../config/db.php';
 
-if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'officer' && $_SESSION['role'] !== 'admin')) {
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'officer') {
     header("Location: ../auth/login.php");
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
-$role = $_SESSION['role'];
-$profile_link = ($role == 'admin') ? '../admin/admin_profile.php' : 'officer_profile.php';
 
 $quiz_id = $_GET['quiz_id'] ?? null;
 $quiz_data = null;
 
 if ($quiz_id) {
     // Get the quiz data for the quiz
-    $stmt = $conn->prepare("SELECT * FROM quiz WHERE quiz_id = ? AND user_id = ?");
-    $stmt->bind_param("ii", $quiz_id, $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if ($result && $result->num_rows > 0) {
-        $quiz_data = $result->fetch_assoc();
-    } else {
-        $quiz_id = null;
+    try {
+        $stmt = $conn->prepare("SELECT * FROM quiz WHERE quiz_id = ? AND user_id = ?");
+        if (!$stmt) {
+            throw new Exception("Database error: " . $conn->error);
+        }
+        $stmt->bind_param("ii", $quiz_id, $user_id);
+        if (!$stmt->execute()) {
+            throw new Exception("Failed to load quiz: " . $stmt->error);
+        }
+        $result = $stmt->get_result();
+        if ($result && $result->num_rows > 0) {
+            $quiz_data = $result->fetch_assoc();
+        } else {
+            $quiz_id = null;
+        }
+        $stmt->close();
+    } catch (Exception $e) {
+        $_SESSION['error'] = $e->getMessage();
+        header("Location: officer_create_quiz.php");
+        exit();
     }
 }
 
@@ -46,47 +59,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             /* Auto create upload folder if not exists */
             if (!is_dir($target_dir)) {
-                mkdir($target_dir, 0777, true);
+                if (!mkdir($target_dir, 0777, true)) {
+                    $error = "Failed to create upload directory";
+                }
             }
 
-            $allowed_ext = ['jpg', 'jpeg', 'png', 'gif'];
-            $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+            if (!$error) {
+                $allowed_ext = ['jpg', 'jpeg', 'png', 'gif'];
+                $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
 
-            if (!in_array($ext, $allowed_ext)) {
-                $error = "Only JPG, JPEG, PNG and GIF files are allowed.";
-            } else {
+                if (!in_array($ext, $allowed_ext)) {
+                    $error = "Only JPG, JPEG, PNG and GIF files are allowed.";
+                } else {
 
-                /* Delete old image if exists */
-                if (!empty($quiz_data['picture']) && file_exists($target_dir . $quiz_data['picture'])) {
-                    unlink($target_dir . $quiz_data['picture']);
+                    /* Delete old image if exists */
+                    if (!empty($quiz_data['picture']) && file_exists($target_dir . $quiz_data['picture'])) {
+                        if (!unlink($target_dir . $quiz_data['picture'])) {
+                            $error = "Failed to delete old image";
+                        }
+                    }
+                    
+                    if (!$error) {
+                        $image_name = uniqid("quiz_") . "." . $ext;
+                        $target_file = $target_dir . $image_name;
+
+                        if (!move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
+                            $error = "Failed to upload image";
+                            $image_name = $quiz_data['picture'] ?? null;
+                        }
+                    }
                 }
-                
-                $image_name = uniqid("quiz_") . "." . $ext;
-                $target_file = $target_dir . $image_name;
-
-                move_uploaded_file($_FILES['image']['tmp_name'], $target_file);
             }
         }
 
         if ($error === "") {
-            if ($quiz_id) {
-                // Update existing draft
-                $stmt = $conn->prepare("UPDATE quiz SET title = ?, description = ?, picture = ?, time_limit = ? WHERE quiz_id = ? AND user_id = ?");
-                $stmt->bind_param("sssiii", $title, $description, $image_name, $time_limit, $quiz_id, $user_id);
-                $stmt->execute();
-            } else {
-                $stmt = $conn->prepare("INSERT INTO quiz (title, description, picture, time_limit, user_id, status) VALUES (?, ?, ?, ?, ?, 'draft')");
-                $stmt->bind_param("sssii", $title, $description, $image_name, $time_limit, $user_id);
-                $stmt->execute();
-                $quiz_id = $stmt->insert_id;
-            }
+            try {
+                if ($quiz_id) {
+                    // Update existing draft
+                    $stmt = $conn->prepare("UPDATE quiz SET title = ?, description = ?, picture = ?, time_limit = ? WHERE quiz_id = ? AND user_id = ?");
+                    if (!$stmt) {
+                        throw new Exception("Database error: " . $conn->error);
+                    }
+                    $stmt->bind_param("sssiii", $title, $description, $image_name, $time_limit, $quiz_id, $user_id);
+                    if (!$stmt->execute()) {
+                        throw new Exception("Failed to update quiz: " . $stmt->error);
+                    }
+                    $stmt->close();
+                } else {
+                    $stmt = $conn->prepare("INSERT INTO quiz (title, description, picture, time_limit, user_id, status) VALUES (?, ?, ?, ?, ?, 'draft')");
+                    if (!$stmt) {
+                        throw new Exception("Database error: " . $conn->error);
+                    }
+                    $stmt->bind_param("sssii", $title, $description, $image_name, $time_limit, $user_id);
+                    if (!$stmt->execute()) {
+                        throw new Exception("Failed to create quiz: " . $stmt->error);
+                    }
+                    $quiz_id = $stmt->insert_id;
+                    $stmt->close();
+                }
 
-            header("Location: officer_create_questions.php?quiz_id=" . $quiz_id);
-            exit();
+                header("Location: officer_create_questions.php?quiz_id=" . $quiz_id);
+                exit();
+            } catch (Exception $e) {
+                $_SESSION['error'] = $e->getMessage();
+                header("Location: officer_create_quiz.php" . ($quiz_id ? "?quiz_id=$quiz_id" : ""));
+                exit();
+            }
         }
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -120,9 +163,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <div class = "topbar-right">
-        <a href = "<?php echo $profile_link; ?>" class = "user-link">
-            <img src = "../../assets/images/user-icon.png" class = "user-icon">
-        </a>
         <img src = "../../assets/images/more-icon.png" class = "more-btn" id = "moreBtn">
         <div class = "more-menu" id = "moreMenu">
             <a href = "officer_profile.php">Profile</a>
@@ -135,17 +175,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class = "sidebar">
         <a href = "officer_main.php">Main Menu</a>
-        <a href = "officer_monthly_report.php">Monthly Report</a>
+        <a href = "#">Monthly Report</a>
         <a href = "#">Events</a>
-        <a href = "../student/browse_tips.php">Smart Tips</a>
-        
-        <a href = "javascript:void(0);" class="dropdown-toggle" onclick="toggleDropdown('quizMenu', this)">
-            Quiz <span class="arrow">&#9662;</span> <!-- Pre-opened arrow style if active -->
-        </a>
-        
-        <div id="quizMenu" class="dropdown-container" style="display: flex; flex-direction: column; padding-left: 20px; background: rgba(0,0,0,0.05);">
-            <a href="officer_quiz.php" class="active" style="font-size: 0.9em;">View Quiz</a>
-            <a href="officer_my_quiz.php" style="font-size: 0.9em;">My Quiz</a>
+        <a href = "#">Smart Tips</a>
+
+        <div class = "sidebar-group">
+            <a href = "officer_quiz.php" class = "active">Quiz</a>
+            <a href = "officer_quiz.php" class = "sub-link active">View Quiz</a>
+            <a href = "officer_my_quiz.php" class = "sub-link">My Quiz</a>
         </div>
 
         <a href = "#">Forum</a>
@@ -201,6 +238,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script>
+<?php if (isset($_SESSION['error'])): ?>
+    alert("Error: <?php echo addslashes($_SESSION['error']); ?>");
+    <?php unset($_SESSION['error']); ?>
+<?php endif; ?>
+
 document.getElementById('quizImage').addEventListener('change', function(e) {
     const file = this.files[0];
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
@@ -210,66 +252,9 @@ document.getElementById('quizImage').addEventListener('change', function(e) {
         alert("Only JPG, JPEG, PNG and GIF files are allowed.")
     }
 });
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    const menuBtn = document.getElementById("menuBtn");
-    const sidebar = document.querySelector(".sidebar");
-
-    const moreBtn = document.getElementById("moreBtn");
-    const moreMenu = document.getElementById("moreMenu");
-
-    if (menuBtn && sidebar) {
-        menuBtn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            sidebar.classList.toggle("active");
-        });
-    }
-
-    /* Sidebar Dropdown Toggle */
-    window.toggleDropdown = function(id, el) {
-        var dropdown = document.getElementById(id);
-        if (dropdown.style.display === "none" || dropdown.style.display === "") {
-            dropdown.style.display = "flex";
-            if(el.querySelector('.arrow')) el.querySelector('.arrow').innerHTML = '&#9652;'; // Up arrow
-        } else {
-            dropdown.style.display = "none";
-                if(el.querySelector('.arrow')) el.querySelector('.arrow').innerHTML = '&#9662;'; // Down arrow
-        }
-    }
-
-    if (moreBtn && moreMenu) {
-        moreBtn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            moreMenu.classList.toggle("active");
-        });
-    }
-
-    /* Auto-close when clicking outside */
-    document.addEventListener("click", function(e) {
-        
-        /*  Close sidebar */
-        if (
-            sidebar &&
-            sidebar.classList.contains("active") &&
-            !sidebar.contains(e.target) &&
-            e.target !== menuBtn
-        ){
-            sidebar.classList.remove("active");
-        }
-
-        /* Close more menu */
-        if (
-            moreMenu &&
-            moreMenu.classList.contains("active") &&
-            !moreMenu.contains(e.target) &&
-            e.target !== moreBtn
-        ){
-            moreMenu.classList.remove("active")
-        }
-    });
-});
 </script>
+
+<script src = '../../assets/js/main.js'></script>
 
 </body>
 </html>

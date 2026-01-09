@@ -1,15 +1,16 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 session_start();
 require '../../config/db.php';
 
-if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'officer' && $_SESSION['role'] !== 'admin')) {
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'officer') {
     header("Location: ../auth/login.php");
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
-$role = $_SESSION['role'];
-$profile_link = ($role == 'admin') ? '../admin/admin_profile.php' : 'officer_profile.php';
 
 /* Filters */
 $search = $_GET['search'] ?? '';
@@ -36,11 +37,25 @@ if (!empty($search)) {
 
 $query .= " ORDER BY created_at DESC";
 
-$stmt = mysqli_prepare($conn, $query);
-mysqli_stmt_bind_param($stmt, $types, ...$params);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
+$result = false;
+try {
+    $stmt = mysqli_prepare($conn, $query);
+    if (!$stmt) {
+        throw new Exception("Database error: " . mysqli_error($conn));
+    }
+    mysqli_stmt_bind_param($stmt, $types, ...$params);
+    if (!mysqli_stmt_execute($stmt)) {
+        throw new Exception("Failed to execute query: " . mysqli_stmt_error($stmt));
+    }
+    $result = mysqli_stmt_get_result($stmt);
+    if (!$result) {
+        throw new Exception("Failed to get result: " . mysqli_error($conn));
+    }
+} catch (Exception $e) {
+    $_SESSION['error'] = $e->getMessage();
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -74,9 +89,6 @@ $result = mysqli_stmt_get_result($stmt);
     </div>
 
     <div class = "topbar-right">
-        <a href = "<?php echo $profile_link; ?>" class = "user-link">
-            <img src = "../../assets/images/user-icon.png" class = "user-icon">
-        </a>
         <img src = "../../assets/images/more-icon.png" class = "more-btn" id = "moreBtn">
         <div class = "more-menu" id = "moreMenu">
             <a href = "officer_profile.php">Profile</a>
@@ -89,17 +101,14 @@ $result = mysqli_stmt_get_result($stmt);
 
     <div class = "sidebar">
         <a href = "officer_main.php">Main Menu</a>
-        <a href = "officer_monthly_report.php">Monthly Report</a>
+        <a href = "#">Monthly Report</a>
         <a href = "#">Events</a>
-        <a href = "../student/browse_tips.php">Smart Tips</a>
-        
-        <a href = "javascript:void(0);" class="dropdown-toggle" onclick="toggleDropdown('quizMenu', this)">
-            Quiz <span class="arrow">&#9652;</span> <!-- Pre-opened arrow style if active -->
-        </a>
-        
-        <div id="quizMenu" class="dropdown-container" style="display: flex; flex-direction: column; padding-left: 20px; background: rgba(0,0,0,0.05);">
-            <a href="officer_quiz.php" style="font-size: 0.9em;">View Quiz</a>
-            <a href="officer_my_quiz.php" class="active" style="font-size: 0.9em;">My Quiz</a>
+        <a href = "#">Smart Tips</a>
+
+        <div class = "sidebar-group">
+            <a href = "officer_quiz.php" class = "active">Quiz</a>
+            <a href = "officer_quiz.php" class = "sub-link">View Quiz</a>
+            <a href = "officer_my_quiz.php" class = "sub-link active">My Quiz</a>
         </div>
 
         <a href = "#">Forum</a>
@@ -141,7 +150,7 @@ $result = mysqli_stmt_get_result($stmt);
                         <?php if ($row['status'] === 'draft'): ?>
                             <a href = "officer_create_quiz.php?quiz_id=<?= $row['quiz_id'] ?>" class = "quiz-action">Continue Editing</a>
                         <?php else: ?>
-                            <a href = "officer_view_quiz.php?id=<?= $row['quiz_id'] ?>" class = "quiz-action">View</a>
+                            <a href = "officer_quiz_detail.php?quiz_id=<?= $row['quiz_id'] ?>" class = "quiz-action">View</a>
                         <?php endif; ?>
 
                     </div>
@@ -157,65 +166,13 @@ $result = mysqli_stmt_get_result($stmt);
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    const menuBtn = document.getElementById("menuBtn");
-    const sidebar = document.querySelector(".sidebar");
-
-    const moreBtn = document.getElementById("moreBtn");
-    const moreMenu = document.getElementById("moreMenu");
-
-    if (menuBtn && sidebar) {
-        menuBtn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            sidebar.classList.toggle("active");
-        });
-    }
-
-    /* Sidebar Dropdown Toggle */
-    window.toggleDropdown = function(id, el) {
-        var dropdown = document.getElementById(id);
-        if (dropdown.style.display === "none" || dropdown.style.display === "") {
-            dropdown.style.display = "flex";
-            if(el.querySelector('.arrow')) el.querySelector('.arrow').innerHTML = '&#9652;'; // Up arrow
-        } else {
-            dropdown.style.display = "none";
-                if(el.querySelector('.arrow')) el.querySelector('.arrow').innerHTML = '&#9662;'; // Down arrow
-        }
-    }
-
-    if (moreBtn && moreMenu) {
-        moreBtn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            moreMenu.classList.toggle("active");
-        });
-    }
-
-    /* Auto-close when clicking outside */
-    document.addEventListener("click", function(e) {
-        
-        /*  Close sidebar */
-        if (
-            sidebar &&
-            sidebar.classList.contains("active") &&
-            !sidebar.contains(e.target) &&
-            e.target !== menuBtn
-        ){
-            sidebar.classList.remove("active");
-        }
-
-        /* Close more menu */
-        if (
-            moreMenu &&
-            moreMenu.classList.contains("active") &&
-            !moreMenu.contains(e.target) &&
-            e.target !== moreBtn
-        ){
-            moreMenu.classList.remove("active")
-        }
-    });
-});
+<?php if (isset($_SESSION['error'])): ?>
+    alert("Error: <?php echo addslashes($_SESSION['error']); ?>");
+    <?php unset($_SESSION['error']); ?>
+<?php endif; ?>
 </script>
+
+<script src = '../../assets/js/main.js'></script>
 
 </body>
 </html>

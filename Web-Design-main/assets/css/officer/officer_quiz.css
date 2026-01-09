@@ -1,8 +1,64 @@
 .quiz-page {
     padding: 30px;
+    overflow-y: auto;
 }
 
-.quiz-header {
+.quiz-page .quiz-card {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.quiz-page .quiz-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+}
+
+.quiz-page .quiz-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+}
+
+.quiz-page .quiz-card-link:hover {
+    text-decoration: none;
+}
+
+.quiz-page .quiz-card-link img {
+    display: block;
+    width: 100%;
+}
+
+.quiz-page .quiz-card-link h3,
+.quiz-page .quiz-card-link p {
+    margin: 0;
+    padding: 0;
+}
+
+/* Ensure the entire card content is clickable */
+.quiz-page .quiz-card-link {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.quiz-page .quiz-card-link > * {
+    flex: 0 0 auto;
+}
+
+/* Optional: Add a subtle visual cue for clickable items */
+.quiz-page .quiz-card-link h3 {
+    margin-top: 10px;
+    color: black;
+    transition: color 0.2s ease;
+}
+
+.quiz-page .quiz-card:hover .quiz-card-link h3 {
+    color: #1a68d1;
+}
+
+.quiz-page .quiz-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -367,6 +423,7 @@
     display: flex;
     justify-content: center;
     padding: 30px;
+    overflow-y: auto;
 }
 
 .quiz-summary-box {
@@ -467,6 +524,254 @@
     background: #1a68d1;
 }
 
+/* Quiz Detail Page Styles */
+.quiz-detail-page {
+    background: #ffffff;
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f4f6f8;
+    color: #333;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    text-decoration: none;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.back-button:hover {
+    background: #e9ecef;
+    text-decoration: none;
+}
+
+.back-button img {
+    width: 16px;
+    height: 16px;
+}
+
+.quiz-header-section {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+    align-items: flex-start;
+}
+
+.quiz-image-container {
+    flex: 0 0 300px;
+}
+
+.quiz-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.quiz-info {
+    flex: 1;
+}
+
+.quiz-title {
+    font-size: 28px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.quiz-description {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.quiz-meta {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.meta-item img {
+    width: 18px;
+    height: 18px;
+    opacity: 0.7;
+}
+
+.statistics-section {
+    margin-bottom: 40px;
+}
+
+.section-title {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: #333;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+.stat-circle {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 15px;
+}
+
+.circle-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.circle-bg {
+    fill: none;
+    stroke: #e9ecef;
+    stroke-width: 8;
+}
+
+.circle-progress {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.35s;
+}
+
+.circle-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.circle-label {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.stat-value {
+    font-size: 36px;
+    font-weight: bold;
+    color: #2c7be5;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.participants-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.participants-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.participants-count {
+    font-size: 18px;
+    color: #666;
+}
+
+.participants-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.participants-table th {
+    background: #f8f9fa;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.participants-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #dee2e6;
+    color: #666;
+}
+
+.participants-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.score-indicator {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.score-pass {
+    background: #e6f4ea;
+    color: #1e7e34;
+}
+
+.score-fail {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+    font-size: 16px;
+}
+
+.no-data-icon {
+    width: 80px;
+    height: 80px;
+    opacity: 0.3;
+    margin-bottom: 15px;
+}
+
 @media (max-width: 600px) {
         .quiz-header {
         flex-direction: column;
@@ -512,5 +817,23 @@
     .summary-footer .back-btn {
         display: block;
         width: 100%;
+    }
+
+        .quiz-header-section {
+        flex-direction: column;
+    }
+    
+    .quiz-image-container {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+    
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .participants-table {
+        display: block;
+        overflow-x: auto;
     }
 }

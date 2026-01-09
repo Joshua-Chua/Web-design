@@ -258,7 +258,7 @@ if ($role == 'officer') {
 
             <a href = "browse_tips.php" class = "active">Smart Tips</a>
             <a href = "student_quiz.php">Quiz</a>
-            <a href = "#">Achievement</a>
+            <a href = "student_achievement.php">Achievement</a>
             <a href = "#">Forum</a>
         <?php endif; ?>
 

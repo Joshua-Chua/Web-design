@@ -81,7 +81,7 @@ if ($result && mysqli_num_rows($result) == 1) {
 
         <a href = "browse_tips.php">Smart Tips</a>
         <a href = "student_quiz.php">Quiz</a>
-        <a href = "#">Achievement</a>
+        <a href = "student_achievement.php">Achievement</a>
         <a href = "#">Forum</a>
         <a href = "../auth/logout.php">Logout</a>
     </div>

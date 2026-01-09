@@ -3,16 +3,13 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Dec 30, 2025 at 07:07 AM
+-- Generation Time: Jan 09, 2026 at 02:02 PM
 -- Server version: 9.1.0
 -- PHP Version: 8.3.14
-
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
-SET FOREIGN_KEY_CHECKS = 0;
-DROP TABLE IF EXISTS `smart_tips`, `question`, `quiz`, `admin`, `officer`, `student`, `user`, `carbon_emission`;
 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -27,17 +24,42 @@ DROP TABLE IF EXISTS `smart_tips`, `question`, `quiz`, `admin`, `officer`, `stud
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `achievement`
+--
+
+DROP TABLE IF EXISTS `achievement`;
+CREATE TABLE IF NOT EXISTS `achievement` (
+  `achievement_id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` varchar(500) NOT NULL,
+  `requirement_type` enum('quizzes_completed','event_participated','login_days','') NOT NULL,
+  `requirement_value` int NOT NULL,
+  `picture` varchar(255) NOT NULL,
+  PRIMARY KEY (`achievement_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `achievement`
+--
+
+INSERT INTO `achievement` (`achievement_id`, `name`, `description`, `requirement_type`, `requirement_value`, `picture`) VALUES
+(1, 'First Quiz Completed', 'Completed 1 quiz(s)', 'quizzes_completed', 1, 'achievement123.jpg'),
+(2, 'A Start For A New Energy Saver', 'Login this website for 1 day(s)', 'login_days', 1, 'login_day1.png');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `admin`
 --
 
 DROP TABLE IF EXISTS `admin`;
 CREATE TABLE IF NOT EXISTS `admin` (
   `admin_id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `identical_number` varchar(20) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `phone_number` varchar(20) NOT NULL,
-  `gender` varchar(50) NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `identical_number` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `phone_number` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `gender` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `user_id` int NOT NULL,
   PRIMARY KEY (`admin_id`),
   KEY `user_id` (`user_id`)
@@ -53,17 +75,76 @@ INSERT INTO `admin` (`admin_id`, `name`, `identical_number`, `email`, `phone_num
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `carbon_emission`
+--
+
+DROP TABLE IF EXISTS `carbon_emission`;
+CREATE TABLE IF NOT EXISTS `carbon_emission` (
+  `emission_id` int NOT NULL AUTO_INCREMENT,
+  `month` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `year` int NOT NULL,
+  `electricity_usage_kwh` decimal(10,2) NOT NULL,
+  `carbon_avoided_kg` decimal(10,2) NOT NULL,
+  `block_a_usage` decimal(10,2) DEFAULT '0.00',
+  `block_b_usage` decimal(10,2) DEFAULT '0.00',
+  `block_c_usage` decimal(10,2) DEFAULT '0.00',
+  `block_d_usage` decimal(10,2) DEFAULT '0.00',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`emission_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `carbon_emission`
+--
+
+INSERT INTO `carbon_emission` (`emission_id`, `month`, `year`, `electricity_usage_kwh`, `carbon_avoided_kg`, `block_a_usage`, `block_b_usage`, `block_c_usage`, `block_d_usage`, `created_at`) VALUES
+(1, 'December', 2024, 1500.50, 450.25, 450.25, 300.10, 375.12, 375.03, '2024-12-31 23:59:59'),
+(2, 'January', 2025, 1200.00, 360.00, 360.00, 240.00, 300.00, 300.00, '2025-01-31 23:59:59'),
+(3, 'February', 2025, 2186.80, 656.04, 656.04, 437.36, 546.70, 546.70, '2025-01-31 23:59:59'),
+(4, 'March', 2025, 1603.81, 481.14, 481.14, 320.76, 400.95, 400.95, '2025-01-31 23:59:59'),
+(5, 'April', 2025, 2484.12, 745.24, 745.24, 496.82, 621.03, 621.03, '2025-01-31 23:59:59'),
+(6, 'May', 2025, 2154.45, 646.34, 646.34, 430.89, 538.61, 538.61, '2025-01-31 23:59:59'),
+(7, 'June', 2025, 1864.95, 559.49, 559.49, 372.99, 466.24, 466.24, '2025-01-31 23:59:59'),
+(8, 'July', 2025, 1961.36, 588.41, 588.41, 392.27, 490.34, 490.34, '2025-01-31 23:59:59'),
+(9, 'August', 2025, 1511.09, 453.33, 453.33, 302.22, 377.77, 377.77, '2025-01-31 23:59:59'),
+(10, 'September', 2025, 2379.96, 713.99, 713.99, 475.99, 594.99, 594.99, '2025-01-31 23:59:59'),
+(11, 'October', 2025, 2405.11, 721.53, 721.53, 481.02, 601.28, 601.28, '2025-01-31 23:59:59'),
+(12, 'November', 2025, 2178.78, 653.63, 653.63, 435.76, 544.70, 544.70, '2025-01-31 23:59:59'),
+(13, 'December', 2025, 1378.25, 413.48, 413.48, 275.65, 344.56, 344.56, '2025-01-31 23:59:59'),
+(14, 'January', 2026, 2190.26, 657.08, 653.97, 441.23, 547.59, 547.59, '2026-01-31 23:59:59');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `login_streak`
+--
+
+DROP TABLE IF EXISTS `login_streak`;
+CREATE TABLE IF NOT EXISTS `login_streak` (
+  `login_streak_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `last_login_date` date NOT NULL,
+  `current_streak_days` int NOT NULL DEFAULT '1',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`login_streak_id`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `officer`
 --
 
 DROP TABLE IF EXISTS `officer`;
 CREATE TABLE IF NOT EXISTS `officer` (
   `officer_id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `identical_number` varchar(20) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `phone_number` varchar(20) NOT NULL,
-  `gender` varchar(50) NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `identical_number` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `phone_number` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `gender` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `user_id` int NOT NULL,
   PRIMARY KEY (`officer_id`),
   KEY `user_id` (`user_id`)
@@ -86,13 +167,13 @@ DROP TABLE IF EXISTS `question`;
 CREATE TABLE IF NOT EXISTS `question` (
   `question_id` int NOT NULL AUTO_INCREMENT,
   `question_number` int NOT NULL,
-  `question` varchar(255) NOT NULL,
-  `picture` varchar(255) DEFAULT NULL,
-  `answer` varchar(255) NOT NULL,
-  `option_a` varchar(255) NOT NULL,
-  `option_b` varchar(255) NOT NULL,
-  `option_c` varchar(255) DEFAULT NULL,
-  `option_d` varchar(255) DEFAULT NULL,
+  `question` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `picture` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `answer` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `option_a` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `option_b` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `option_c` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `option_d` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `quiz_id` int NOT NULL,
   PRIMARY KEY (`question_id`),
   KEY `quiz_id` (`quiz_id`)
@@ -117,11 +198,11 @@ INSERT INTO `question` (`question_id`, `question_number`, `question`, `picture`,
 DROP TABLE IF EXISTS `quiz`;
 CREATE TABLE IF NOT EXISTS `quiz` (
   `quiz_id` int NOT NULL AUTO_INCREMENT,
-  `title` varchar(100) NOT NULL,
-  `description` varchar(500) NOT NULL,
+  `title` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `description` varchar(500) COLLATE utf8mb4_general_ci NOT NULL,
   `time_limit` int NOT NULL,
-  `picture` varchar(255) NOT NULL,
-  `status` enum('draft','published','','') NOT NULL,
+  `picture` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `status` enum('draft','published','','') COLLATE utf8mb4_general_ci NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `user_id` int NOT NULL,
   PRIMARY KEY (`quiz_id`),
@@ -139,17 +220,63 @@ INSERT INTO `quiz` (`quiz_id`, `title`, `description`, `time_limit`, `picture`, 
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `quiz_attempt`
+--
+
+DROP TABLE IF EXISTS `quiz_attempt`;
+CREATE TABLE IF NOT EXISTS `quiz_attempt` (
+  `attempt_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `quiz_id` int NOT NULL,
+  `score` decimal(5,2) NOT NULL,
+  `quiz_completed` enum('Completed','Not Completed','','') NOT NULL,
+  `attempted_count` int NOT NULL,
+  `attempted_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`attempt_id`),
+  KEY `user_id` (`user_id`),
+  KEY `quiz_id` (`quiz_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `smart_tips`
+--
+
+DROP TABLE IF EXISTS `smart_tips`;
+CREATE TABLE IF NOT EXISTS `smart_tips` (
+  `tip_id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `content` text COLLATE utf8mb4_general_ci NOT NULL,
+  `thumbnail` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_by` int NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`tip_id`),
+  KEY `created_by` (`created_by`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `smart_tips`
+--
+
+INSERT INTO `smart_tips` (`tip_id`, `title`, `content`, `thumbnail`, `created_by`, `created_at`) VALUES
+(1, 'Turn off lights', 'Turn off lights when not in use to save energy.', NULL, 1, '2025-01-01 10:00:00'),
+(2, 'Unplug devices', 'Unplug chargers and electronics when they are fully charged or not in use.', NULL, 1, '2025-01-02 14:30:00');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `student`
 --
 
 DROP TABLE IF EXISTS `student`;
 CREATE TABLE IF NOT EXISTS `student` (
   `student_id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `identical_number` varchar(20) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `phone_number` varchar(20) NOT NULL,
-  `gender` varchar(50) NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `identical_number` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `phone_number` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `gender` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `user_id` int NOT NULL,
   PRIMARY KEY (`student_id`),
   KEY `user_id` (`user_id`)
@@ -171,9 +298,9 @@ INSERT INTO `student` (`student_id`, `name`, `identical_number`, `email`, `phone
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE IF NOT EXISTS `user` (
   `user_id` int NOT NULL AUTO_INCREMENT,
-  `username` varchar(50) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `role` varchar(255) NOT NULL,
+  `username` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `password` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `role` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -186,6 +313,23 @@ INSERT INTO `user` (`user_id`, `username`, `password`, `role`) VALUES
 (2, 'TP083719', '$2y$12$yqzGY4Dg0UXzHVRg95dPf.c1BGBilj9E2yP.9fLJvz.fhYI14EB1y', 'student'),
 (3, 'TP083259', '$2y$12$yqzGY4Dg0UXzHVRg95dPf.c1BGBilj9E2yP.9fLJvz.fhYI14EB1y', 'admin');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_achievement`
+--
+
+DROP TABLE IF EXISTS `user_achievement`;
+CREATE TABLE IF NOT EXISTS `user_achievement` (
+  `user_achievement_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `achievement_id` int NOT NULL,
+  `date_awarded` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_achievement_id`),
+  KEY `user_id` (`user_id`),
+  KEY `achievement_id` (`achievement_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 --
 -- Constraints for dumped tables
 --
@@ -195,6 +339,12 @@ INSERT INTO `user` (`user_id`, `username`, `password`, `role`) VALUES
 --
 ALTER TABLE `admin`
   ADD CONSTRAINT `admin_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `login_streak`
+--
+ALTER TABLE `login_streak`
+  ADD CONSTRAINT `login_streak_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `officer`
@@ -215,76 +365,11 @@ ALTER TABLE `quiz`
   ADD CONSTRAINT `quiz_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `student`
+-- Constraints for table `quiz_attempt`
 --
-ALTER TABLE `student`
-  ADD CONSTRAINT `student_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
--- --------------------------------------------------------
-
---
--- Table structure for table `smart_tips`
---
-
-DROP TABLE IF EXISTS `smart_tips`;
-CREATE TABLE IF NOT EXISTS `smart_tips` (
-  `tip_id` int NOT NULL AUTO_INCREMENT,
-  `title` varchar(255) NOT NULL,
-  `content` text NOT NULL,
-  `thumbnail` varchar(255) DEFAULT NULL,
-  `created_by` int NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`tip_id`),
-  KEY `created_by` (`created_by`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `smart_tips`
---
-
-INSERT INTO `smart_tips` (`tip_id`, `title`, `content`, `thumbnail`, `created_by`, `created_at`) VALUES
-(1, 'Turn off lights', 'Turn off lights when not in use to save energy.', NULL, 1, '2025-01-01 10:00:00'),
-(2, 'Unplug devices', 'Unplug chargers and electronics when they are fully charged or not in use.', NULL, 1, '2025-01-02 14:30:00');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `carbon_emission`
---
-
-DROP TABLE IF EXISTS `carbon_emission`;
-CREATE TABLE IF NOT EXISTS `carbon_emission` (
-  `emission_id` int NOT NULL AUTO_INCREMENT,
-  `month` varchar(50) NOT NULL,
-  `year` int NOT NULL,
-  `electricity_usage_kwh` decimal(10,2) NOT NULL,
-  `carbon_avoided_kg` decimal(10,2) NOT NULL,
-  `block_a_usage` decimal(10,2) DEFAULT 0,
-  `block_b_usage` decimal(10,2) DEFAULT 0,
-  `block_c_usage` decimal(10,2) DEFAULT 0,
-  `block_d_usage` decimal(10,2) DEFAULT 0,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`emission_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `carbon_emission`
---
-
-INSERT INTO `carbon_emission` (`emission_id`, `month`, `year`, `electricity_usage_kwh`, `carbon_avoided_kg`, `block_a_usage`, `block_b_usage`, `block_c_usage`, `block_d_usage`, `created_at`) VALUES
-(1, 'December', 2024, 1500.50, 450.25, 450.25, 300.10, 375.12, 375.03, '2024-12-31 23:59:59'),
-(2, 'January', 2025, 1200.00, 360.00, 360.00, 240.00, 300.00, 300.00, '2025-01-31 23:59:59'),
-(3, 'February', 2025, 2186.8, 656.04, 656.04, 437.36, 546.7, 546.7, '2025-01-31 23:59:59'),
-(4, 'March', 2025, 1603.81, 481.143, 481.143, 320.762, 400.9525, 400.9525, '2025-01-31 23:59:59'),
-(5, 'April', 2025, 2484.12, 745.236, 745.236, 496.824, 621.03, 621.03, '2025-01-31 23:59:59'),
-(6, 'May', 2025, 2154.45, 646.335, 646.335, 430.89, 538.6125, 538.6125, '2025-01-31 23:59:59'),
-(7, 'June', 2025, 1864.95, 559.485, 559.485, 372.99, 466.2375, 466.2375, '2025-01-31 23:59:59'),
-(8, 'July', 2025, 1961.36, 588.408, 588.408, 392.272, 490.34, 490.34, '2025-01-31 23:59:59'),
-(9, 'August', 2025, 1511.09, 453.327, 453.327, 302.218, 377.7725, 377.7725, '2025-01-31 23:59:59'),
-(10, 'September', 2025, 2379.96, 713.988, 713.988, 475.992, 594.99, 594.99, '2025-01-31 23:59:59'),
-(11, 'October', 2025, 2405.11, 721.533, 721.533, 481.022, 601.2775, 601.2775, '2025-01-31 23:59:59'),
-(12, 'November', 2025, 2178.78, 653.634, 653.634, 435.756, 544.695, 544.695, '2025-01-31 23:59:59'),
-(13, 'December', 2025, 1378.25, 413.475, 413.475, 275.65, 344.5625, 344.5625, '2025-01-31 23:59:59'),
-(14, 'January', 2026, 2127.52, 638.256, 638.256, 425.504, 531.88, 531.88, '2026-01-31 23:59:59');
+ALTER TABLE `quiz_attempt`
+  ADD CONSTRAINT `quiz_attempt_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `quiz_attempt_ibfk_2` FOREIGN KEY (`quiz_id`) REFERENCES `quiz` (`quiz_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `smart_tips`
@@ -292,8 +377,19 @@ INSERT INTO `carbon_emission` (`emission_id`, `month`, `year`, `electricity_usag
 ALTER TABLE `smart_tips`
   ADD CONSTRAINT `smart_tips_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
+--
+-- Constraints for table `student`
+--
+ALTER TABLE `student`
+  ADD CONSTRAINT `student_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `user_achievement`
+--
+ALTER TABLE `user_achievement`
+  ADD CONSTRAINT `user_achievement_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `user_achievement_ibfk_2` FOREIGN KEY (`achievement_id`) REFERENCES `achievement` (`achievement_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
-SET FOREIGN_KEY_CHECKS = 1;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

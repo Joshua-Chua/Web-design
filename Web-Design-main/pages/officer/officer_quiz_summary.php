@@ -1,13 +1,14 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 session_start();
 require '../../config/db.php';
 
-if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'officer' && $_SESSION['role'] !== 'admin')) {
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'officer') {
     header("Location: ../auth/login.php");
     exit();
 }
-$role = $_SESSION['role'];
-$profile_link = ($role == 'admin') ? '../admin/admin_profile.php' : 'officer_profile.php';
 
 $quiz_id = $_GET['quiz_id'] ?? null;
 
@@ -16,49 +17,88 @@ if (!$quiz_id) {
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
+$success_message = "";
+$quiz = null;
+$q_count = 0;
+
+try {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $action = $_POST['action'] ?? '';
+        
+        if ($action === 'draft') {
+            // Save as Draft
+            $stmt = $conn->prepare("UPDATE quiz SET status = 'draft' WHERE quiz_id = ?");
+            if (!$stmt) {
+                throw new Exception("Database error: " . $conn->error);
+            }
+            $stmt->bind_param("i", $quiz_id);
+            if (!$stmt->execute()) {
+                throw new Exception("Failed to save as draft: " . $stmt->error);
+            }
+            $stmt->close();
+            
+            // Success message
+            $success_message = "Quiz saved as draft successfully!";
+            
+        } elseif ($action === 'publish') {
+            // Save & Publish
+            $stmt = $conn->prepare("UPDATE quiz SET status = 'published' WHERE quiz_id = ?");
+            if (!$stmt) {
+                throw new Exception("Database error: " . $conn->error);
+            }
+            $stmt->bind_param("i", $quiz_id);
+            if (!$stmt->execute()) {
+                throw new Exception("Failed to publish quiz: " . $stmt->error);
+            }
+            $stmt->close();
+            
+            // Redirect to quiz menu
+            header("Location: officer_quiz.php");
+            exit();
+        }
+    }
+} catch (Exception $e) {
+    $_SESSION['error'] = $e->getMessage();
+    header("Location: officer_quiz_summary.php?quiz_id=$quiz_id");
+    exit();
+}
+
+try {
+    $quiz_stmt = $conn->prepare("SELECT * FROM quiz WHERE quiz_id = ?");
+    if (!$quiz_stmt) {
+        throw new Exception("Database error: " . $conn->error);
+    }
+    $quiz_stmt->bind_param("i", $quiz_id);
+    if (!$quiz_stmt->execute()) {
+        throw new Exception("Failed to load quiz: " . $quiz_stmt->error);
+    }
+    $quiz_result = $quiz_stmt->get_result();
+    $quiz = $quiz_result->fetch_assoc();
+    $quiz_stmt->close();
     
-    if ($action === 'draft') {
-        // Save as Draft
-        $stmt = $conn->prepare("UPDATE quiz SET status = 'draft' WHERE quiz_id = ?");
-        $stmt->bind_param("i", $quiz_id);
-        $stmt->execute();
-        $stmt->close();
-        
-        // Success message
-        $success_message = "Quiz saved as draft successfully!";
-        
-    } elseif ($action === 'publish') {
-        // Save & Publish
-        $stmt = $conn->prepare("UPDATE quiz SET status = 'published' WHERE quiz_id = ?");
-        $stmt->bind_param("i", $quiz_id);
-        $stmt->execute();
-        $stmt->close();
-        
-        // Redirect to quiz menu
+    if (!$quiz) {
+        $_SESSION['error'] = "Quiz not found.";
         header("Location: officer_quiz.php");
         exit();
     }
-}
-
-$quiz_stmt = $conn->prepare("SELECT * FROM quiz WHERE quiz_id = ?");
-$quiz_stmt->bind_param("i", $quiz_id);
-$quiz_stmt->execute();
-$quiz_result = $quiz_stmt->get_result();
-$quiz = $quiz_result->fetch_assoc();
-
-$q_count_stmt = $conn->prepare("SELECT COUNT(*) as total FROM question WHERE quiz_id = ?");
-$q_count_stmt->bind_param("i", $quiz_id);
-$q_count_stmt->execute();
-$q_count_result = $q_count_stmt->get_result();
-$q_count = $q_count_result->fetch_assoc()['total'];
-
-if (!$quiz) {
-    echo "<p>Quiz not found.</p>";
-    exit();
+    
+    $q_count_stmt = $conn->prepare("SELECT COUNT(*) as total FROM question WHERE quiz_id = ?");
+    if (!$q_count_stmt) {
+        throw new Exception("Database error: " . $conn->error);
+    }
+    $q_count_stmt->bind_param("i", $quiz_id);
+    if (!$q_count_stmt->execute()) {
+        throw new Exception("Failed to count questions: " . $q_count_stmt->error);
+    }
+    $q_count_result = $q_count_stmt->get_result();
+    $q_count_row = $q_count_result->fetch_assoc();
+    $q_count = $q_count_row['total'] ?? 0;
+    $q_count_stmt->close();
+} catch (Exception $e) {
+    $_SESSION['error'] = $e->getMessage();
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -92,9 +132,6 @@ if (!$quiz) {
     </div>
 
     <div class = "topbar-right">
-        <a href = "<?php echo $profile_link; ?>" class = "user-link">
-            <img src = "../../assets/images/user-icon.png" class = "user-icon">
-        </a>
         <img src = "../../assets/images/more-icon.png" class = "more-btn" id = "moreBtn">
         <div class = "more-menu" id = "moreMenu">
             <a href = "officer_profile.php">Profile</a>
@@ -107,16 +144,14 @@ if (!$quiz) {
 
     <div class = "sidebar">
         <a href = "officer_main.php">Main Menu</a>
-        <a href = "officer_monthly_report.php">Monthly Report</a>
+        <a href = "#">Monthly Report</a>
         <a href = "#">Events</a>
-        <a href = "../student/browse_tips.php">Smart Tips</a>
-        
-        <a href = "javascript:void(0);" class="dropdown-toggle" onclick="toggleDropdown('quizMenu', this)">
-            Quiz <span class="arrow">&#9662;</span>
-        </a>
-        <div id="quizMenu" class="dropdown-container" style="display: flex; flex-direction: column; padding-left: 20px; background: rgba(0,0,0,0.05);">
-            <a href="officer_quiz.php" style="font-size: 0.9em;">View Quiz</a>
-            <a href="officer_my_quiz.php" style="font-size: 0.9em;">My Quiz</a>
+        <a href = "#">Smart Tips</a>
+
+        <div class = "sidebar-group">
+            <a href = "officer_quiz.php" class = "active">Quiz</a>
+            <a href = "officer_quiz.php" class = "sub-link active">View Quiz</a>
+            <a href = "officer_my_quiz.php" class = "sub-link">My Quiz</a>
         </div>
 
         <a href = "#">Forum</a>
@@ -193,65 +228,13 @@ if (!$quiz) {
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    /* Sidebar Dropdown Toggle */
-    window.toggleDropdown = function(id, el) {
-        var dropdown = document.getElementById(id);
-        if (dropdown.style.display === "none" || dropdown.style.display === "") {
-            dropdown.style.display = "flex";
-            if(el.querySelector('.arrow')) el.querySelector('.arrow').innerHTML = '&#9652;'; // Up arrow
-        } else {
-            dropdown.style.display = "none";
-                if(el.querySelector('.arrow')) el.querySelector('.arrow').innerHTML = '&#9662;'; // Down arrow
-        }
-    }
-
-    const menuBtn = document.getElementById("menuBtn");
-    const sidebar = document.querySelector(".sidebar");
-
-    const moreBtn = document.getElementById("moreBtn");
-    const moreMenu = document.getElementById("moreMenu");
-
-    if (menuBtn && sidebar) {
-        menuBtn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            sidebar.classList.toggle("active");
-        });
-    }
-
-    if (moreBtn && moreMenu) {
-        moreBtn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            moreMenu.classList.toggle("active");
-        });
-    }
-
-    /* Auto-close when clicking outside */
-    document.addEventListener("click", function(e) {
-        
-        /*  Close sidebar */
-        if (
-            sidebar &&
-            sidebar.classList.contains("active") &&
-            !sidebar.contains(e.target) &&
-            e.target !== menuBtn
-        ){
-            sidebar.classList.remove("active");
-        }
-
-        /* Close more menu */
-        if (
-            moreMenu &&
-            moreMenu.classList.contains("active") &&
-            !moreMenu.contains(e.target) &&
-            e.target !== moreBtn
-        ){
-            moreMenu.classList.remove("active")
-        }
-    });
-});
+<?php if (isset($_SESSION['error'])): ?>
+    alert("Error: <?php echo addslashes($_SESSION['error']); ?>");
+    <?php unset($_SESSION['error']); ?>
+<?php endif; ?>
 </script>
+
+<script src = '../../assets/js/main.js'></script>
 
 </body>
 </html>

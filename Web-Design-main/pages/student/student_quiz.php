@@ -5,76 +5,105 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 session_start();
 require '../../config/db.php';
 
-if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['student', 'admin', 'officer'])) {
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
     header("Location: ../auth/login.php");
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
-$role = $_SESSION['role'];
-$profile_link = 'student_profile.php';
-if($role == 'officer') $profile_link = '../officer/officer_profile.php';
-if($role == 'admin') $profile_link = '../admin/admin_profile.php';
 
 /* Fetch quizzes created */
 $search = $_GET['search'] ?? '';
 $db_error = false;
-$error_msg = '';
 $result = false;
 
 try {
-    $query = "SELECT * FROM quiz WHERE status = 'published'";
-
-    if (!empty($search)) {
-        $search_sql = mysqli_real_escape_string($conn, $search);
-        if (!$search_sql) {
-            throw new Exception("Failed to sanitize search input");
-        }
-        $query .= " AND title LIKE '%$search_sql%'";
-    }
-
-    $result = mysqli_query($conn, $query);
+    // Build the query with prepared statements to avoid SQL injection
+    $base_query = "SELECT * FROM quiz WHERE status = 'published'";
     
-    if (!$result) {
-        throw new Exception("Database error: " . mysqli_error($conn));
+    // Check if we need to filter out completed quizzes
+    $check_completion_query = "SELECT quiz_id FROM quiz_attempt WHERE user_id = ? AND quiz_completed = 'Completed'";
+    $stmt_check = $conn->prepare($check_completion_query);
+    if (!$stmt_check) {
+        throw new Exception("Failed to prepare completion check: " . $conn->error);
     }
+    $stmt_check->bind_param("i", $user_id);
+    if (!$stmt_check->execute()) {
+        throw new Exception("Failed to execute completion check: " . $stmt_check->error);
+    }
+    $completion_result = $stmt_check->get_result();
+    
+    $completed_quiz_ids = [];
+    while ($row = $completion_result->fetch_assoc()) {
+        $completed_quiz_ids[] = $row['quiz_id'];
+    }
+    $stmt_check->close();
+    
+    // Build the main query
+    $query = $base_query;
+    
+    // Add condition to exclude completed quizzes if there are any
+    if (!empty($completed_quiz_ids)) {
+        $placeholders = implode(',', array_fill(0, count($completed_quiz_ids), '?'));
+        $query .= " AND quiz_id NOT IN ($placeholders)";
+    }
+    
+    // Add search condition if provided
+    if (!empty($search)) {
+        $search_param = "%$search%";
+        $query .= " AND title LIKE ?";
+    }
+    
+    // Prepare and execute the main query
+    $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        throw new Exception("Failed to prepare statement: " . $conn->error);
+    }
+    
+    // Bind parameters
+    $param_types = "";
+    $params = [];
+    
+    // Add completed quiz IDs parameters
+    if (!empty($completed_quiz_ids)) {
+        $param_types .= str_repeat("i", count($completed_quiz_ids));
+        $params = array_merge($params, $completed_quiz_ids);
+    }
+    
+    // Add search parameter if provided
+    if (!empty($search)) {
+        $param_types .= "s";
+        $params[] = $search_param;
+    }
+    
+    // Bind parameters if we have any
+    if (!empty($params)) {
+        $stmt->bind_param($param_types, ...$params);
+    }
+    
+    if (!$stmt->execute()) {
+        throw new Exception("Failed to execute query: " . $stmt->error);
+    }
+    
+    $result = $stmt->get_result();
+    $stmt->close();
 } catch (Exception $e) {
     $db_error = true;
-    $error_msg = $e->getMessage();
+    $_SESSION['error'] = "Database error occurred. Please try again.";
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APU Energy Sustainability - Quizzes</title>
+    <title>APU Energy Sustainability</title>
     <link rel = "stylesheet" href = "../../assets/css/style.css">
-    <link rel = "stylesheet" href = "../../assets/css/officer/officer_main.css"> <!-- Reuse officer styles -->
-    <link rel = "stylesheet" href = "../../assets/css/officer/officer_quiz.css"> <!-- Reuse quiz grid styles -->
-    <style>
-        .quiz-card {
-            cursor: default; /* Since we have a button */
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .start-btn {
-            margin-top: auto;
-            background: #2E8B57;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .start-btn:hover {
-            background: #3CB371;
-        }
-    </style>
+    <link rel = "stylesheet" href = "../../assets/css/officer/officer_main.css">
+    <link rel = "stylesheet" href = "../../assets/css/officer/officer_quiz.css">
+    <link rel = "stylesheet" href = "../../assets/css/officer/officer_profile.css">
+    <link rel = "stylesheet" href = "../../assets/css/student/student_quiz.css">
 </head>
 <body>
     
@@ -96,12 +125,9 @@ try {
     </div>
 
     <div class = "topbar-right">
-        <a href = "<?php echo $profile_link; ?>" class = "user-link">
-            <img src = "../../assets/images/user-icon.png" class = "user-icon">
-        </a>
         <img src = "../../assets/images/more-icon.png" class = "more-btn" id = "moreBtn">
         <div class = "more-menu" id = "moreMenu">
-            <a href = "<?php echo $profile_link; ?>">Profile</a>
+            <a href = "student_profile.php">Profile</a>
             <a href = "../auth/logout.php">Logout</a>
         </div>
     </div>
@@ -111,35 +137,17 @@ try {
 
     <div class = "sidebar">
         <a href = "student_main.php">Main Menu</a>
-        
-        <?php if ($role == 'officer' || $role == 'admin'): ?>
-            <a href = "../officer/officer_monthly_report.php">Monthly Report</a>
-            <a href = "#">Events</a>
-            <a href = "browse_tips.php">Smart Tips</a>
-            <a href = "../officer/officer_quiz.php">View Quiz</a>
-            <a href = "../officer/officer_my_quiz.php">My Quiz</a>
-            <a href = "#">Forum</a>
-        <?php else: ?>
-            <a href = "javascript:void(0);" class="dropdown-toggle" onclick="toggleDropdown('eventMenu', this)">
-                Events <span class="arrow">&#9662;</span>
-            </a>
-            <div id="eventMenu" class="dropdown-container" style="display: none; flex-direction: column; padding-left: 20px; background: rgba(0,0,0,0.05);">
-                <a href="#" style="font-size: 0.9em;">Event Registration</a>
-                <a href="#" style="font-size: 0.9em;">Upcoming Event</a>
-            </div>
-            
-            <a href = "browse_tips.php">Smart Tips</a>
-            <a href = "student_quiz.php" class="active">Quiz</a>
-            <a href = "#">Achievement</a>
-            <a href = "#">Forum</a>
-        <?php endif; ?>
-
+        <a href = "#">Events</a>
+        <a href = "browse_tips.php">Smart Tips</a>
+        <a href = "student_quiz.php" class = "active">Quiz</a>
+        <a href = "student_achievement.php">Achievement</a>
+        <a href = "#">Forum</a>
         <a href = "../auth/logout.php">Logout</a>
     </div>
 
-    <div class = 'content quiz-page'>
+    <div class = 'content quiz-page quiz-details-page'>
         <div class = "quiz-header">
-            <h2>Available Quizzes</h2>
+            <h2>Quiz</h2>
 
             <form method = "GET" class = "quiz-search">
                 <div class = "search-wrapper">
@@ -151,23 +159,24 @@ try {
 
         <div class = "quiz-grid">
 
-        <?php if (isset($db_error) && $db_error): ?>
-            <div class = "no-quiz-text">Error: <?= htmlspecialchars($error_msg) ?></div>
+        <?php if ($db_error): ?>
+            <div class = "no-quiz-text">Something went wrong. Please try again later.</div>
 
-        <?php elseif ($result && mysqli_num_rows($result) > 0): ?>
-            <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                <div class = "quiz-card">
-                    <img src = "../../uploads/quiz/<?= htmlspecialchars($row['picture']) ?>" alt = "Quiz Image" style="width:100%; height: 150px; object-fit: cover; border-radius: 8px;">
-                    <h3><?= htmlspecialchars($row['title']) ?></h3>
-                    <p><?= htmlspecialchars($row['description']) ?></p>
-                    <a href="student_attempt_quiz.php?quiz_id=<?= $row['quiz_id'] ?>" class="start-btn">Start Quiz</a>
+        <?php elseif ($result && $result->num_rows > 0): ?>
+            <?php while ($row = $result->fetch_assoc()): ?>
+                <div class="quiz-card">
+                    <a href="student_quiz_detail.php?quiz_id=<?= $row['quiz_id'] ?>" class="quiz-card-link">
+                        <img src="../../uploads/quiz/<?= htmlspecialchars($row['picture']) ?>" alt="Quiz Image">
+                        <h3><?= htmlspecialchars($row['title']) ?></h3>
+                        <p><?= htmlspecialchars($row['description']) ?></p>
+                    </a>
                 </div>
             <?php endwhile; ?>
 
         <?php else: ?>
 
             <div class = "no-quiz-text">
-                No quizzes available at the moment.
+                No quiz found. <?= !empty($search) ? 'Try a different search term.' : 'All quizzes have been completed or no quizzes are available.' ?>
             </div>
 
         <?php endif; ?>
@@ -178,65 +187,13 @@ try {
 </div>
 
 <script>
-/* Sidebar Dropdown Toggle */
-window.toggleDropdown = function(id, el) {
-    var dropdown = document.getElementById(id);
-    if (dropdown.style.display === "none" || dropdown.style.display === "") {
-        dropdown.style.display = "flex";
-        if(el.querySelector('.arrow')) el.querySelector('.arrow').innerHTML = '&#9652;'; // Up arrow
-    } else {
-        dropdown.style.display = "none";
-            if(el.querySelector('.arrow')) el.querySelector('.arrow').innerHTML = '&#9662;'; // Down arrow
-    }
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    const menuBtn = document.getElementById("menuBtn");
-    const sidebar = document.querySelector(".sidebar");
-
-    const moreBtn = document.getElementById("moreBtn");
-    const moreMenu = document.getElementById("moreMenu");
-
-    if (menuBtn && sidebar) {
-        menuBtn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            sidebar.classList.toggle("active");
-        });
-    }
-
-    if (moreBtn && moreMenu) {
-        moreBtn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            moreMenu.classList.toggle("active");
-        });
-    }
-
-    /* Auto-close when clicking outside */
-    document.addEventListener("click", function(e) {
-        
-        /*  Close sidebar */
-        if (
-            sidebar &&
-            sidebar.classList.contains("active") &&
-            !sidebar.contains(e.target) &&
-            e.target !== menuBtn
-        ){
-            sidebar.classList.remove("active");
-        }
-
-        /* Close more menu */
-        if (
-            moreMenu &&
-            moreMenu.classList.contains("active") &&
-            !moreMenu.contains(e.target) &&
-            e.target !== moreBtn
-        ){
-            moreMenu.classList.remove("active")
-        }
-    });
-});
+<?php if (isset($_SESSION['error'])): ?>
+    alert("Error: <?php echo addslashes($_SESSION['error']); ?>");
+    <?php unset($_SESSION['error']); ?>
+<?php endif; ?>
 </script>
+
+<script src = '../../assets/js/main.js'></script>
 
 </body>
 </html>

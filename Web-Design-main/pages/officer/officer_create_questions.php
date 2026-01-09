@@ -1,8 +1,11 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 session_start();
 require '../../config/db.php';
 
-if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['officer', 'admin'])) {
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'officer') {
     header("Location: ../auth/login.php");
     exit();
 }
@@ -12,8 +15,6 @@ if (!$quiz_id || $quiz_id <= 0) {
     header("Location: officer_quiz.php");
     exit();
 }
-$role = $_SESSION['role'];
-$profile_link = ($role == 'admin') ? '../admin/admin_profile.php' : 'officer_profile.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -29,91 +30,139 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Delete questions first
     if (!empty($deletedIds)) {
-        // Delete all at once
-        $in = implode(',', array_fill(0, count($deletedIds), '?'));
-        $types = str_repeat('i', count($deletedIds));
+        try {
+            // Delete all at once
+            $in = implode(',', array_fill(0, count($deletedIds), '?'));
+            $types = str_repeat('i', count($deletedIds));
         
-        $stmt = $conn->prepare("DELETE FROM question WHERE question_id IN ($in) AND quiz_id = ?");
-        $params = array_merge($deletedIds, [$quiz_id]);
-        $stmt->bind_param($types . "i", ...$params);
-        $stmt->execute();
-        $stmt->close();
+            $stmt = $conn->prepare("DELETE FROM question WHERE question_id IN ($in) AND quiz_id = ?");
+            if (!$stmt) {
+                throw new Exception("Database error: " . $conn->error);
+            }
+            $params = array_merge($deletedIds, [$quiz_id]);
+            $stmt->bind_param($types . "i", ...$params);
+            if (!$stmt->execute()) {
+                throw new Exception("Failed to delete questions: " . $stmt->error);
+            }
+            $stmt->close();
+        } catch (Exception $e) {
+            $_SESSION['error'] = $e->getMessage();
+            header("Location: officer_create_questions.php?quiz_id=$quiz_id");
+            exit();
+        }
     }
 
     // Process remaining form data
     // Get all remaining questions in the database
     $remainingQuestions = [];
-    $stmt = $conn->prepare("SELECT question_id, question_number FROM question WHERE quiz_id = ? ORDER BY question_number ASC");
-    $stmt->bind_param("i", $quiz_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    while ($row = $result->fetch_assoc()) {
-        $remainingQuestions[$row['question_id']] = $row['question_number'];
+    try {
+        $stmt = $conn->prepare("SELECT question_id, question_number FROM question WHERE quiz_id = ? ORDER BY question_number ASC");
+        if (!$stmt) {
+            throw new Exception("Database error: " . $conn->error);
+        }
+        $stmt->bind_param("i", $quiz_id);
+        if (!$stmt->execute()) {
+            throw new Exception("Failed to load questions: " . $stmt->error);
+        }
+        $result = $stmt->get_result();
+        while ($row = $result->fetch_assoc()) {
+            $remainingQuestions[$row['question_id']] = $row['question_number'];
+        }
+        $stmt->close();
+    } catch (Exception $e) {
+        $_SESSION['error'] = $e->getMessage();
+        header("Location: officer_create_questions.php?quiz_id=$quiz_id");
+        exit();
     }
-    $stmt->close();
 
     // Update existing questions
     foreach ($questions as $i => $q_text) {
         $qid = $question_ids[$i] ?? null;
-        
+    
         // Skip if no question ID OR if it was deleted
         if (!$qid || in_array($qid, $deletedIds)) {
             continue;
         }
-        
+    
         // Existing question
         $answer = $correct_answers[$i] ?? '';
         $optA = ($options_list[$i][0] ?? '');
         $optB = ($options_list[$i][1] ?? '');
         $optC = ($options_list[$i][2] ?? null);
         $optD = ($options_list[$i][3] ?? null);
-    
+
         if ($optA === '' || $optB === '' || $q_text === '') {
             continue;
         }
-    
+
         // Save image to file
         $image_name = null;
-    
+
         if (!empty($_FILES['question_image']['name'][$i])) {
             $dir = "../../uploads/questions/";
-        
-            if (!is_dir($dir)) mkdir($dir, 0777, true);
-        
+    
+            if (!is_dir($dir)) {
+                if (!mkdir($dir, 0777, true)) {
+                    $_SESSION['error'] = "Failed to create upload directory";
+                    header("Location: officer_create_questions.php?quiz_id=$quiz_id");
+                    exit();
+                }
+            }
+    
             $tmp = $_FILES['question_image']['tmp_name'][$i];
             $name = $_FILES['question_image']['name'][$i];
             $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-        
+    
             if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) {
                 $image_name = uniqid("q_"). "." . $ext;
-                move_uploaded_file($tmp, $dir . $image_name);
+                if (!move_uploaded_file($tmp, $dir . $image_name)) {
+                    $_SESSION['error'] = "Failed to upload image";
+                    header("Location: officer_create_questions.php?quiz_id=$quiz_id");
+                    exit();
+                }
             }
         }
-        
-        // Update the question
-        $stmt = $conn->prepare("SELECT picture FROM question WHERE question_id = ?");
-        $stmt->bind_param("i", $qid);
-        $stmt->execute();
-        $old = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
+    
+        try {
+            // Update the question
+            $stmt = $conn->prepare("SELECT picture FROM question WHERE question_id = ?");
+            if (!$stmt) {
+                throw new Exception("Database error: " . $conn->error);
+            }
+            $stmt->bind_param("i", $qid);
+            if (!$stmt->execute()) {
+                throw new Exception("Failed to load question data: " . $stmt->error);
+            }
+            $old = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
 
-        $final_image = $image_name ?? $old['picture'];
+            $final_image = $image_name ?? $old['picture'];
 
-        $stmt = $conn->prepare("
-            UPDATE question SET
-            question = ?, answer = ?, picture = ?,
-            option_a = ?, option_b = ?, option_c = ?, option_d = ?
-            WHERE question_id = ?
-        ");
+            $stmt = $conn->prepare("
+                UPDATE question SET
+                question = ?, answer = ?, picture = ?,
+                option_a = ?, option_b = ?, option_c = ?, option_d = ?
+                WHERE question_id = ?
+            ");
+            if (!$stmt) {
+                throw new Exception("Database error: " . $conn->error);
+            }
 
-        $stmt->bind_param(
-            "sssssssi",
-            $q_text, $answer, $final_image,
-            $optA, $optB, $optC, $optD,
-            $qid
-        );
-        $stmt->execute();
-        $stmt->close();
+            $stmt->bind_param(
+                "sssssssi",
+                $q_text, $answer, $final_image,
+                $optA, $optB, $optC, $optD,
+                $qid
+            );
+            if (!$stmt->execute()) {
+                throw new Exception("Failed to update question: " . $stmt->error);
+            }
+            $stmt->close();
+        } catch (Exception $e) {
+            $_SESSION['error'] = $e->getMessage();
+            header("Location: officer_create_questions.php?quiz_id=$quiz_id");
+            exit();
+        }
     }
 
     // Insert only truly new questions
@@ -121,13 +170,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $newQuestionIndexes = [];
     foreach ($questions as $i => $q_text) {
         $qid = $question_ids[$i] ?? null;
-        
+    
         // If no question_id and not empty, it's a new question
         if (!$qid && $q_text !== '') {
             $newQuestionIndexes[] = $i;
         }
     }
-    
+
     // Process new questions
     foreach ($newQuestionIndexes as $i) {
         $q_text = $questions[$i];
@@ -136,100 +185,152 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $optB = ($options_list[$i][1] ?? '');
         $optC = ($options_list[$i][2] ?? null);
         $optD = ($options_list[$i][3] ?? null);
-    
+
         if ($optA === '' || $optB === '') {
             continue;
         }
-    
+
         // Save image to file
         $image_name = null;
-    
+
         if (!empty($_FILES['question_image']['name'][$i])) {
             $dir = "../../uploads/questions/";
-        
-            if (!is_dir($dir)) mkdir($dir, 0777, true);
-        
+    
+            if (!is_dir($dir)) {
+                if (!mkdir($dir, 0777, true)) {
+                    $_SESSION['error'] = "Failed to create upload directory";
+                    header("Location: officer_create_questions.php?quiz_id=$quiz_id");
+                    exit();
+                }
+            }
+    
             $tmp = $_FILES['question_image']['tmp_name'][$i];
             $name = $_FILES['question_image']['name'][$i];
             $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-        
+    
             if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'])) {
                 $image_name = uniqid("q_"). "." . $ext;
-                move_uploaded_file($tmp, $dir . $image_name);
+                if (!move_uploaded_file($tmp, $dir . $image_name)) {
+                    $_SESSION['error'] = "Failed to upload image";
+                    header("Location: officer_create_questions.php?quiz_id=$quiz_id");
+                    exit();
+                }
             }
         }
+    
+        try {
+            // Get next question number
+            $stmt = $conn->prepare("SELECT COALESCE(MAX(question_number), 0) + 1 as next_number FROM question WHERE quiz_id = ?");
+            if (!$stmt) {
+                throw new Exception("Database error: " . $conn->error);
+            }
+            $stmt->bind_param("i", $quiz_id);
+            if (!$stmt->execute()) {
+                throw new Exception("Failed to get next question number: " . $stmt->error);
+            }
+            $stmt->bind_result($next_number);
+            $stmt->fetch();
+            $stmt->close();
         
-        // Get next question number
-        $stmt = $conn->prepare("SELECT COALESCE(MAX(question_number), 0) + 1 as next_number FROM question WHERE quiz_id = ?");
-        $stmt->bind_param("i", $quiz_id);
-        $stmt->execute();
-        $stmt->bind_result($next_number);
-        $stmt->fetch();
-        $stmt->close();
-        
-        // Insert the new question
-        $stmt = $conn->prepare("
-        INSERT INTO question
-        (quiz_id, question_number, question, answer, picture, option_a, option_b, option_c, option_d)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
+            // Insert the new question
+            $stmt = $conn->prepare("
+            INSERT INTO question
+            (quiz_id, question_number, question, answer, picture, option_a, option_b, option_c, option_d)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            if (!$stmt) {
+                throw new Exception("Database error: " . $conn->error);
+            }
 
-        $stmt->bind_param(
-            "iisssssss",
-            $quiz_id, $next_number, $q_text, $answer, $image_name,
-            $optA, $optB, $optC, $optD
-        );
-        $stmt->execute();
-        $stmt->close();
+            $stmt->bind_param(
+                "iisssssss",
+                $quiz_id, $next_number, $q_text, $answer, $image_name,
+                $optA, $optB, $optC, $optD
+            );
+            if (!$stmt->execute()) {
+                throw new Exception("Failed to add new question: " . $stmt->error);
+            }
+            $stmt->close();
+        } catch (Exception $e) {
+            $_SESSION['error'] = $e->getMessage();
+            header("Location: officer_create_questions.php?quiz_id=$quiz_id");
+            exit();
+        }
     }
 
-    // Final renumbering
-    $stmt = $conn->prepare(
-        "SELECT question_id FROM question WHERE quiz_id = ? ORDER BY question_number ASC, question_id ASC"
-    );
-    $stmt->bind_param("i", $quiz_id);
-    $stmt->execute();
-    $res = $stmt->get_result();
-
-    $num = 1;
-    while ($r = $res->fetch_assoc()) {
-        $u = $conn->prepare(
-            "UPDATE question SET question_number = ? WHERE question_id = ?"
+    try {
+        // Final renumbering
+        $stmt = $conn->prepare(
+            "SELECT question_id FROM question WHERE quiz_id = ? ORDER BY question_number ASC, question_id ASC"
         );
-        $u->bind_param("ii", $num, $r['question_id']);
-        $u->execute();
-        $u->close();
-        $num++;
+        if (!$stmt) {
+            throw new Exception("Database error: " . $conn->error);
+        }
+        $stmt->bind_param("i", $quiz_id);
+        if (!$stmt->execute()) {
+            throw new Exception("Failed to load questions for renumbering: " . $stmt->error);
+        }
+        $res = $stmt->get_result();
+
+        $num = 1;
+        while ($r = $res->fetch_assoc()) {
+            $u = $conn->prepare(
+                "UPDATE question SET question_number = ? WHERE question_id = ?"
+            );
+            if (!$u) {
+                throw new Exception("Database error: " . $conn->error);
+            }
+            $u->bind_param("ii", $num, $r['question_id']);
+            if (!$u->execute()) {
+                throw new Exception("Failed to renumber questions: " . $u->error);
+            }
+            $u->close();
+            $num++;
+        }
+    } catch (Exception $e) {
+        $_SESSION['error'] = $e->getMessage();
+        header("Location: officer_create_questions.php?quiz_id=$quiz_id");
+        exit();
     }
 
     header("Location: officer_quiz_summary.php?quiz_id=$quiz_id");
     exit();
 }
 
-$questions_data = [];
+try {
+    $questions_data = [];
 
-$stmt = $conn->prepare("SELECT * FROM question WHERE quiz_id = ? ORDER BY question_number ASC");
-$stmt->bind_param("i", $quiz_id);
-$stmt->execute();
-$result = $stmt->get_result();
+    $stmt = $conn->prepare("SELECT * FROM question WHERE quiz_id = ? ORDER BY question_number ASC");
+    if (!$stmt) {
+        throw new Exception("Database error: " . $conn->error);
+    }
+    $stmt->bind_param("i", $quiz_id);
+    if (!$stmt->execute()) {
+        throw new Exception("Failed to load questions: " . $stmt->error);
+    }
+    $result = $stmt->get_result();
 
-while ($row = $result->fetch_assoc()) {
-    $questions_data[] = $row;
-}
+    while ($row = $result->fetch_assoc()) {
+        $questions_data[] = $row;
+    }
 
-if (empty($questions_data)) {
-    $questions_data[] = [
-        'question_id' => null,
-        'question' => '',
-        'answer' => '',
-        'picture' => null,
-        'option_a' => '',
-        'option_b' => '',
-        'option_c' => null,
-        'option_d' => null
-    ];
+    if (empty($questions_data)) {
+        $questions_data[] = [
+            'question_id' => null,
+            'question' => '',
+            'answer' => '',
+            'picture' => null,
+            'option_a' => '',
+            'option_b' => '',
+            'option_c' => null,
+            'option_d' => null
+        ];
+    }
+} catch (Exception $e) {
+    $_SESSION['error'] = $e->getMessage();
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -263,9 +364,6 @@ if (empty($questions_data)) {
     </div>
 
     <div class = "topbar-right">
-        <a href = "<?php echo $profile_link; ?>" class = "user-link">
-            <img src = "../../assets/images/user-icon.png" class = "user-icon">
-        </a>
         <img src = "../../assets/images/more-icon.png" class = "more-btn" id = "moreBtn">
         <div class = "more-menu" id = "moreMenu">
             <a href = "officer_profile.php">Profile</a>
@@ -278,17 +376,14 @@ if (empty($questions_data)) {
 
     <div class = "sidebar">
         <a href = "officer_main.php">Main Menu</a>
-        <a href = "officer_monthly_report.php">Monthly Report</a>
+        <a href = "#">Monthly Report</a>
         <a href = "#">Events</a>
-        <a href = "../student/browse_tips.php">Smart Tips</a>
-        
-        <a href = "javascript:void(0);" class="dropdown-toggle" onclick="toggleDropdown('quizMenu', this)">
-            Quiz <span class="arrow">&#9662;</span> <!-- Pre-opened arrow style if active -->
-        </a>
-        
-        <div id="quizMenu" class="dropdown-container" style="display: flex; flex-direction: column; padding-left: 20px; background: rgba(0,0,0,0.05);">
-            <a href="officer_quiz.php" class="active" style="font-size: 0.9em;">View Quiz</a>
-            <a href="officer_my_quiz.php" style="font-size: 0.9em;">My Quiz</a>
+        <a href = "#">Smart Tips</a>
+
+        <div class = "sidebar-group">
+            <a href = "officer_quiz.php" class = "active">Quiz</a>
+            <a href = "officer_quiz.php" class = "sub-link active">View Quiz</a>
+            <a href = "officer_my_quiz.php" class = "sub-link">My Quiz</a>
         </div>
 
         <a href = "#">Forum</a>
@@ -388,6 +483,11 @@ if (empty($questions_data)) {
 </div>
 
 <script>
+<?php if (isset($_SESSION['error'])): ?>
+    alert("Error: <?php echo addslashes($_SESSION['error']); ?>");
+    <?php unset($_SESSION['error']); ?>
+<?php endif; ?>
+
 let questionCount = document.querySelectorAll(".question-box").length;
 let deletedQuestionIds = [];
 
@@ -619,65 +719,6 @@ function updateOptionButtons(optionBox) {
     });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-
-    const menuBtn = document.getElementById("menuBtn");
-    const sidebar = document.querySelector(".sidebar");
-
-    const moreBtn = document.getElementById("moreBtn");
-    const moreMenu = document.getElementById("moreMenu");
-
-    if (menuBtn && sidebar) {
-        menuBtn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            sidebar.classList.toggle("active");
-        });
-    }
-
-    /* Sidebar Dropdown Toggle */
-    window.toggleDropdown = function(id, el) {
-        var dropdown = document.getElementById(id);
-        if (dropdown.style.display === "none" || dropdown.style.display === "") {
-            dropdown.style.display = "flex";
-            if(el.querySelector('.arrow')) el.querySelector('.arrow').innerHTML = '&#9652;'; // Up arrow
-        } else {
-            dropdown.style.display = "none";
-                if(el.querySelector('.arrow')) el.querySelector('.arrow').innerHTML = '&#9662;'; // Down arrow
-        }
-    }
-
-    if (moreBtn && moreMenu) {
-        moreBtn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            moreMenu.classList.toggle("active");
-        });
-    }
-
-    /* Auto-close when clicking outside */
-    document.addEventListener("click", function(e) {
-        
-        /*  Close sidebar */
-        if (
-            sidebar &&
-            sidebar.classList.contains("active") &&
-            !sidebar.contains(e.target) &&
-            e.target !== menuBtn
-        ){
-            sidebar.classList.remove("active");
-        }
-
-        /* Close more menu */
-        if (
-            moreMenu &&
-            moreMenu.classList.contains("active") &&
-            !moreMenu.contains(e.target) &&
-            e.target !== moreBtn
-        ){
-            moreMenu.classList.remove("active")
-        }
-    });
-});
-
 document.addEventListener('change', function(e) {
     if (e.target.type === 'file') {
         const file = e.target.files[0];
@@ -688,6 +729,8 @@ document.addEventListener('change', function(e) {
     }
 });
 </script>
+
+<script src = '../../assets/js/main.js'></script>
 
 </body>
 </html>

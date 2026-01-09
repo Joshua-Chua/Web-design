@@ -79,19 +79,11 @@ try {
 
 <div class = "dashboard">
     <div class = "sidebar">
-        <a href = "officer_main.php">Main Menu</a>
-        <a href = "officer_monthly_report.php">Monthly Report</a>
+        <a href = "officer_main.php" class = "active">Main Menu</a>
+        <a href = "#">Monthly Report</a>
         <a href = "#">Events</a>
-        <a href = "../student/browse_tips.php">Smart Tips</a>
-        
-        <a href = "javascript:void(0);" class="dropdown-toggle" onclick="toggleDropdown('quizMenu', this)">
-            Quiz <span class="arrow">&#9662;</span>
-        </a>
-        <div id="quizMenu" class="dropdown-container" style="display: none; flex-direction: column; padding-left: 20px; background: rgba(0,0,0,0.05);">
-            <a href="officer_quiz.php" style="font-size: 0.9em;">View Quiz</a>
-            <a href="officer_my_quiz.php" style="font-size: 0.9em;">My Quiz</a>
-        </div>
-
+        <a href = "#">Smart Tips</a>
+        <a href = "officer_quiz.php">Quiz</a>
         <a href = "#">Forum</a>
         <a href = "../auth/logout.php">Logout</a>
     </div>
@@ -125,64 +117,7 @@ try {
     <?php unset($_SESSION['error']); ?>
 <?php endif; ?>
 
-/* Sidebar Dropdown Toggle */
-window.toggleDropdown = function(id, el) {
-    var dropdown = document.getElementById(id);
-    if (dropdown.style.display === "none" || dropdown.style.display === "") {
-        dropdown.style.display = "flex";
-        if(el.querySelector('.arrow')) el.querySelector('.arrow').innerHTML = '&#9652;'; // Up arrow
-    } else {
-        dropdown.style.display = "none";
-            if(el.querySelector('.arrow')) el.querySelector('.arrow').innerHTML = '&#9662;'; // Down arrow
-    }
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-    const menuBtn = document.getElementById("menuBtn");
-    const sidebar = document.querySelector(".sidebar");
-
-    const moreBtn = document.getElementById("moreBtn");
-    const moreMenu = document.getElementById("moreMenu");
-
-    /* Toggle sidebar */
-    if (menuBtn && sidebar) {
-        menuBtn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            sidebar.classList.toggle("active");
-        });
-    }
-
-    /* Toggle more button */
-    if (moreBtn && moreMenu) {
-        moreBtn.addEventListener("click", function(e) {
-            e.stopPropagation();
-            moreMenu.classList.toggle("active");
-        });
-    }
-
-    /* Auto-close when clicking outside */
-    document.addEventListener("click", function(e) {
-        
-        /*  Close sidebar */
-        if (
-            sidebar &&
-            sidebar.classList.contains("active") &&
-            !sidebar.contains(e.target) &&
-            e.target !== menuBtn
-        ){
-            sidebar.classList.remove("active");
-        }
-
-        /* Close more menu */
-        if (
-            moreMenu &&
-            moreMenu.classList.contains("active") &&
-            !moreMenu.contains(e.target) &&
-            e.target !== moreBtn
-        ){
-            moreMenu.classList.remove("active")
-        }
-    });
+document.addEventListener("DOMContentLoaded", function() {
 
     /* Reset on resize */
     window.addEventListener("resize", function() {
@@ -193,6 +128,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 </script>
+
+<script src = '../../assets/js/main.js'></script>
 
 </body>
 </html>
