@@ -1,0 +1,165 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to bottom right, #2c7be5, #67b6f9);
+}
+
+.login-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo img {
+    width: 200px;
+    height: auto;
+}
+
+.logo-wrapper {
+    background-color: #f4f6f8;
+    padding: 15px;
+    border-radius: 15px;
+    display: inline-block;
+}
+
+.login-container {
+    width: 400px;
+    padding: 35px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.success-msg {
+    color: #155724;
+    background: #d4edda;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.error-msg {
+    color: #d32f2f;
+    background: #fdecea;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #333;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #2c7be5;
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 40px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.forgot-password {
+    text-align: left;
+    margin-bottom: 50px;
+}
+
+.back-link {
+    text-align: left;
+    margin-bottom: 50px;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    background: #2c7be5;
+    color: white;
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1a68d1;
+}
+
+@media (max-width: 600px) {
+    .login-wrapper {
+        padding: 20px;
+    }
+
+    .logo img {
+        width: 160px;
+    }
+
+    .login-container {
+        width: 90%;
+        padding: 25px;
+        border-radius: 15px;
+    }
+
+    input {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    button {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .forgot-password {
+        margin-bottom: 25px;
+    }
+
+    .back-link {
+        margin-bottom: 25px;
+    }
+}
