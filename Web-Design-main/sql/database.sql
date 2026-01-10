@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Jan 09, 2026 at 02:02 PM
+-- Generation Time: Jan 10, 2026 at 04:46 AM
 -- Server version: 9.1.0
 -- PHP Version: 8.3.14
 
@@ -55,15 +55,15 @@ INSERT INTO `achievement` (`achievement_id`, `name`, `description`, `requirement
 DROP TABLE IF EXISTS `admin`;
 CREATE TABLE IF NOT EXISTS `admin` (
   `admin_id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `identical_number` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `phone_number` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `gender` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `identical_number` varchar(20) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `phone_number` varchar(20) NOT NULL,
+  `gender` varchar(50) NOT NULL,
   `user_id` int NOT NULL,
   PRIMARY KEY (`admin_id`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `admin`
@@ -75,13 +75,34 @@ INSERT INTO `admin` (`admin_id`, `name`, `identical_number`, `email`, `phone_num
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `approval`
+--
+
+DROP TABLE IF EXISTS `approval`;
+CREATE TABLE IF NOT EXISTS `approval` (
+  `approval_id` int NOT NULL,
+  `approval_decision` tinyint(1) DEFAULT NULL,
+  `event_id` int NOT NULL,
+  `admin_id` int NOT NULL,
+  `proposal_id` int NOT NULL,
+  `officer_id` int NOT NULL,
+  PRIMARY KEY (`approval_id`),
+  KEY `proposal_id` (`proposal_id`),
+  KEY `event_id` (`event_id`),
+  KEY `admin_id` (`admin_id`),
+  KEY `approval_ibfk_4` (`officer_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `carbon_emission`
 --
 
 DROP TABLE IF EXISTS `carbon_emission`;
 CREATE TABLE IF NOT EXISTS `carbon_emission` (
   `emission_id` int NOT NULL AUTO_INCREMENT,
-  `month` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `month` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `year` int NOT NULL,
   `electricity_usage_kwh` decimal(10,2) NOT NULL,
   `carbon_avoided_kg` decimal(10,2) NOT NULL,
@@ -111,7 +132,40 @@ INSERT INTO `carbon_emission` (`emission_id`, `month`, `year`, `electricity_usag
 (11, 'October', 2025, 2405.11, 721.53, 721.53, 481.02, 601.28, 601.28, '2025-01-31 23:59:59'),
 (12, 'November', 2025, 2178.78, 653.63, 653.63, 435.76, 544.70, 544.70, '2025-01-31 23:59:59'),
 (13, 'December', 2025, 1378.25, 413.48, 413.48, 275.65, 344.56, 344.56, '2025-01-31 23:59:59'),
-(14, 'January', 2026, 2190.26, 657.08, 653.97, 441.23, 547.59, 547.59, '2026-01-31 23:59:59');
+(14, 'January', 2026, 2201.83, 660.55, 656.87, 444.13, 550.49, 550.49, '2026-01-31 23:59:59');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `comment`
+--
+
+DROP TABLE IF EXISTS `comment`;
+CREATE TABLE IF NOT EXISTS `comment` (
+  `comment_id` int NOT NULL,
+  `comment_details` varchar(500) NOT NULL,
+  `post_id` int NOT NULL,
+  `user_id` int NOT NULL,
+  PRIMARY KEY (`comment_id`),
+  KEY `post_id` (`post_id`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `event`
+--
+
+DROP TABLE IF EXISTS `event`;
+CREATE TABLE IF NOT EXISTS `event` (
+  `event_id` int NOT NULL,
+  `proposal_id` int NOT NULL,
+  `approval_id` int NOT NULL,
+  PRIMARY KEY (`event_id`),
+  KEY `proposal_id` (`proposal_id`),
+  KEY `approval_id` (`approval_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -140,15 +194,15 @@ CREATE TABLE IF NOT EXISTS `login_streak` (
 DROP TABLE IF EXISTS `officer`;
 CREATE TABLE IF NOT EXISTS `officer` (
   `officer_id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `identical_number` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `phone_number` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `gender` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `identical_number` varchar(20) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `phone_number` varchar(20) NOT NULL,
+  `gender` varchar(50) NOT NULL,
   `user_id` int NOT NULL,
   PRIMARY KEY (`officer_id`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `officer`
@@ -160,6 +214,56 @@ INSERT INTO `officer` (`officer_id`, `name`, `identical_number`, `email`, `phone
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `post`
+--
+
+DROP TABLE IF EXISTS `post`;
+CREATE TABLE IF NOT EXISTS `post` (
+  `post_id` int NOT NULL,
+  `post_subject` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `post_details` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `picture` varchar(255) NOT NULL,
+  `student_id` int NOT NULL,
+  `officer_id` int NOT NULL,
+  `admin_id` int NOT NULL,
+  PRIMARY KEY (`post_id`),
+  KEY `student_id` (`student_id`),
+  KEY `officer_id` (`officer_id`),
+  KEY `admin_id` (`admin_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `proposal`
+--
+
+DROP TABLE IF EXISTS `proposal`;
+CREATE TABLE IF NOT EXISTS `proposal` (
+  `proposal_id` int NOT NULL AUTO_INCREMENT,
+  `event_name` varchar(50) NOT NULL,
+  `event_description` varchar(500) NOT NULL,
+  `date` date NOT NULL,
+  `time` varchar(50) NOT NULL,
+  `location` varchar(50) NOT NULL,
+  `officer_id` int NOT NULL,
+  `participant_limit` int DEFAULT NULL,
+  `picture` varchar(250) NOT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'pending',
+  PRIMARY KEY (`proposal_id`),
+  KEY `proposal_ibfk_1` (`officer_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `proposal`
+--
+
+INSERT INTO `proposal` (`proposal_id`, `event_name`, `event_description`, `date`, `time`, `location`, `officer_id`, `participant_limit`, `picture`, `status`) VALUES
+(1, 'Eco Friendly Workshop', 'Feel free to join us for protecting our natural environment!!!!', '2026-01-30', '14:25', 'Auditorium 4, Level 3', 1, 80, '1768020158_eco workshop.jpg', 'pending');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `question`
 --
 
@@ -167,17 +271,17 @@ DROP TABLE IF EXISTS `question`;
 CREATE TABLE IF NOT EXISTS `question` (
   `question_id` int NOT NULL AUTO_INCREMENT,
   `question_number` int NOT NULL,
-  `question` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `picture` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `answer` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `option_a` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `option_b` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `option_c` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `option_d` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `question` varchar(255) NOT NULL,
+  `picture` varchar(255) DEFAULT NULL,
+  `answer` varchar(255) NOT NULL,
+  `option_a` varchar(255) NOT NULL,
+  `option_b` varchar(255) NOT NULL,
+  `option_c` varchar(255) DEFAULT NULL,
+  `option_d` varchar(255) DEFAULT NULL,
   `quiz_id` int NOT NULL,
   PRIMARY KEY (`question_id`),
   KEY `quiz_id` (`quiz_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `question`
@@ -198,11 +302,11 @@ INSERT INTO `question` (`question_id`, `question_number`, `question`, `picture`,
 DROP TABLE IF EXISTS `quiz`;
 CREATE TABLE IF NOT EXISTS `quiz` (
   `quiz_id` int NOT NULL AUTO_INCREMENT,
-  `title` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `description` varchar(500) COLLATE utf8mb4_general_ci NOT NULL,
+  `title` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `description` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `time_limit` int NOT NULL,
-  `picture` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `status` enum('draft','published','','') COLLATE utf8mb4_general_ci NOT NULL,
+  `picture` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `status` enum('draft','published','','') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `user_id` int NOT NULL,
   PRIMARY KEY (`quiz_id`),
@@ -240,15 +344,67 @@ CREATE TABLE IF NOT EXISTS `quiz_attempt` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `react_post`
+--
+
+DROP TABLE IF EXISTS `react_post`;
+CREATE TABLE IF NOT EXISTS `react_post` (
+  `react_id` int NOT NULL,
+  `reaction_type` enum('like','love','cry','angry') NOT NULL,
+  `user_id` int NOT NULL,
+  `post_id` int NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`react_id`),
+  KEY `post_id` (`post_id`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `registration`
+--
+
+DROP TABLE IF EXISTS `registration`;
+CREATE TABLE IF NOT EXISTS `registration` (
+  `registration_id` int NOT NULL,
+  `student_id` int NOT NULL,
+  `event_id` int NOT NULL,
+  `attendance` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`registration_id`),
+  KEY `event_id` (`event_id`),
+  KEY `student_id` (`student_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `report`
+--
+
+DROP TABLE IF EXISTS `report`;
+CREATE TABLE IF NOT EXISTS `report` (
+  `report_id` int NOT NULL,
+  `report_details` varchar(250) NOT NULL,
+  `student_id` int NOT NULL,
+  `post_id` int NOT NULL,
+  PRIMARY KEY (`report_id`),
+  KEY `student_id` (`student_id`),
+  KEY `post_id` (`post_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `smart_tips`
 --
 
 DROP TABLE IF EXISTS `smart_tips`;
 CREATE TABLE IF NOT EXISTS `smart_tips` (
   `tip_id` int NOT NULL AUTO_INCREMENT,
-  `title` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `content` text COLLATE utf8mb4_general_ci NOT NULL,
-  `thumbnail` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `thumbnail` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `created_by` int NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`tip_id`),
@@ -272,15 +428,15 @@ INSERT INTO `smart_tips` (`tip_id`, `title`, `content`, `thumbnail`, `created_by
 DROP TABLE IF EXISTS `student`;
 CREATE TABLE IF NOT EXISTS `student` (
   `student_id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `identical_number` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `phone_number` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
-  `gender` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `identical_number` varchar(20) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `phone_number` varchar(20) NOT NULL,
+  `gender` varchar(50) NOT NULL,
   `user_id` int NOT NULL,
   PRIMARY KEY (`student_id`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `student`
@@ -298,9 +454,9 @@ INSERT INTO `student` (`student_id`, `name`, `identical_number`, `email`, `phone
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE IF NOT EXISTS `user` (
   `user_id` int NOT NULL AUTO_INCREMENT,
-  `username` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
-  `password` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `role` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `role` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -341,6 +497,29 @@ ALTER TABLE `admin`
   ADD CONSTRAINT `admin_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Constraints for table `approval`
+--
+ALTER TABLE `approval`
+  ADD CONSTRAINT `approval_ibfk_1` FOREIGN KEY (`proposal_id`) REFERENCES `proposal` (`proposal_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `approval_ibfk_2` FOREIGN KEY (`admin_id`) REFERENCES `admin` (`admin_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `approval_ibfk_3` FOREIGN KEY (`event_id`) REFERENCES `event` (`event_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `approval_ibfk_4` FOREIGN KEY (`officer_id`) REFERENCES `officer` (`officer_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `comment`
+--
+ALTER TABLE `comment`
+  ADD CONSTRAINT `comment_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `post` (`post_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `comment_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `event`
+--
+ALTER TABLE `event`
+  ADD CONSTRAINT `event_ibfk_1` FOREIGN KEY (`proposal_id`) REFERENCES `proposal` (`proposal_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `event_ibfk_2` FOREIGN KEY (`approval_id`) REFERENCES `approval` (`approval_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Constraints for table `login_streak`
 --
 ALTER TABLE `login_streak`
@@ -351,6 +530,20 @@ ALTER TABLE `login_streak`
 --
 ALTER TABLE `officer`
   ADD CONSTRAINT `officer_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `post`
+--
+ALTER TABLE `post`
+  ADD CONSTRAINT `post_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `post_ibfk_2` FOREIGN KEY (`officer_id`) REFERENCES `officer` (`officer_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `post_ibfk_3` FOREIGN KEY (`admin_id`) REFERENCES `admin` (`admin_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `proposal`
+--
+ALTER TABLE `proposal`
+  ADD CONSTRAINT `proposal_ibfk_1` FOREIGN KEY (`officer_id`) REFERENCES `officer` (`officer_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `question`
@@ -376,12 +569,6 @@ ALTER TABLE `quiz_attempt`
 --
 ALTER TABLE `smart_tips`
   ADD CONSTRAINT `smart_tips_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Constraints for table `student`
---
-ALTER TABLE `student`
-  ADD CONSTRAINT `student_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `user_achievement`
