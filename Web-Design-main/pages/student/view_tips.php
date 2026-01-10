@@ -56,6 +56,7 @@ $tip = mysqli_fetch_assoc($result);
     <title><?php echo htmlspecialchars($tip['title']); ?> - Smart Tips</title>
     <link rel = "stylesheet" href = "../../assets/css/style.css">
     <link rel = "stylesheet" href = "../../assets/css/officer/officer_main.css">
+    <link rel = "stylesheet" href = "../../assets/css/officer/officer_profile.css">
     <style>
         .tip-detail-container {
             background: #fff;

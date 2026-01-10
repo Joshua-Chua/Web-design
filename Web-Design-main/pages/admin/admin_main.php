@@ -53,7 +53,7 @@ try {
         <img src = "../../assets/images/apu-logo.png" class = "top-logo" alt = "APU Logo">
 
         <!-- Home Button -->
-        <a href = "officer_main.php" class = "home-btn">
+        <a href = "admin_main.php" class = "home-btn">
             <img src = "../../assets/images/home-icon.png" class = "home-icon" alt = "Home">
         </a>
 
@@ -63,7 +63,7 @@ try {
     <div class = "topbar-right">
 
         <!-- Laptop User Icon -->
-        <a href = "officer_profile.php" class = "user-link">
+        <a href = "admin_profile.php" class = "user-link">
             <img src = "../../assets/images/user-icon.png" class = "user-icon">
         </a>
 

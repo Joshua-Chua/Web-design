@@ -8,6 +8,15 @@ if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'officer' && $_SESSION['
     exit();
 }
 
+$user_role = $_SESSION['role'];
+
+// Set dynamic navigation based on role
+if ($user_role === 'admin') {
+    $main_menu_link = '../../pages/admin/admin_main.php';
+} else {
+    $main_menu_link = 'officer_main.php';
+}
+
 $message = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -126,7 +135,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <div class = "topbar-left">
         <img src = "../../assets/images/apu-logo.png" class = "top-logo" alt = "APU Logo">
-        <a href = "officer_main.php" class = "home-btn">
+        <a href = "<?= $main_menu_link ?>" class = "home-btn">
             <img src = "../../assets/images/home-icon.png" class = "home-icon" alt = "Home">
         </a>
     </div>
@@ -149,7 +158,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <div class = "dashboard">
     <div class = "sidebar">
-        <a href = "officer_main.php">Main Menu</a>
+        <a href = "<?= $main_menu_link ?>">Main Menu</a>
         <?php if($_SESSION['role'] == 'officer' || $_SESSION['role'] == 'admin'): ?>
             <a href = "officer_monthly_report.php">Monthly Report</a>
             <a href = "officer_event.php">Events</a>

@@ -34,6 +34,44 @@ if ($result) {
     <link rel = "stylesheet" href = "../../assets/css/officer/officer_main.css">
     <link rel = "stylesheet" href = "../../assets/css/officer/officer_profile.css">
     <style>
+                body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+        }
+    
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    
+        .dashboard {
+            position: fixed;
+            top: 60px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+        }
+    
+        .sidebar {
+            height: 100%;
+            overflow-y: auto;
+        }
+    
+        .content {
+            flex: 1;
+            height: 100%;
+            overflow-y: auto;
+            padding: 20px;
+            background: #ffffff;
+        }
         .report-page-container {
             padding: 20px;
             background: #fff;
