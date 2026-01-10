@@ -81,7 +81,7 @@ try {
     <div class = "sidebar">
         <a href = "admin_main.php">Main Menu</a>
         <a href = "../officer/officer_monthly_report.php">Monthly Report</a>
-        <a href = "#">Events</a>
+        <a href = "admin_approval_event.php">Events</a>
         <a href = "../student/browse_tips.php">Smart Tips</a>
         
         <a href = "javascript:void(0);" class="dropdown-toggle" onclick="toggleDropdown('quizMenu', this)">
