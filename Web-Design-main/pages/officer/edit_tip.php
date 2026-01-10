@@ -167,7 +167,7 @@ if ($role == 'admin') {
         <a href = "<?php echo $home_link; ?>">Main Menu</a>
         <?php if($role == 'officer' || $role == 'admin'): ?>
             <a href = "officer_monthly_report.php">Monthly Report</a>
-            <a href = "#">Events</a>
+            <a href = "officer_event.php">Events</a>
             <a href = "../student/browse_tips.php" class="active">Smart Tips</a>
             
             <a href = "javascript:void(0);" class="dropdown-toggle" onclick="toggleDropdown('quizMenu', this)">
@@ -178,7 +178,7 @@ if ($role == 'admin') {
                 <a href="officer_my_quiz.php" style="font-size: 0.9em;">My Quiz</a>
             </div>
 
-            <a href = "#">Forum</a>
+            <a href = "officer_forum.php">Forum</a>
         <?php else: ?>
              <!-- Should not happen given the auth check -->
         <?php endif; ?>

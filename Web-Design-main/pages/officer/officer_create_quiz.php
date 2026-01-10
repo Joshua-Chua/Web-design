@@ -5,12 +5,22 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 session_start();
 require '../../config/db.php';
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'officer') {
+if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['officer', 'admin'])) {
     header("Location: ../auth/login.php");
     exit();
 }
 
 $user_id = $_SESSION['user_id'];
+$user_role = $_SESSION['role'];
+
+// Set dynamic navigation based on role
+if ($user_role === 'admin') {
+    $main_menu_link = '../../pages/admin/admin_main.php';
+    $profile_link = '../../pages/admin/admin_profile.php';
+} else {
+    $main_menu_link = 'officer_main.php';
+    $profile_link = 'officer_profile.php';
+}
 
 $quiz_id = $_GET['quiz_id'] ?? null;
 $quiz_data = null;
@@ -150,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class = "topbar-left">
         <img src = "../../assets/images/apu-logo.png" class = "top-logo">
 
-        <a href = "officer_main.php" class = "home-btn">
+        <a href = "<?= $main_menu_link ?>" class = "home-btn">
             <img src = "../../assets/images/home-icon.png" class = "home-icon">
         </a>
 
@@ -165,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class = "topbar-right">
         <img src = "../../assets/images/more-icon.png" class = "more-btn" id = "moreBtn">
         <div class = "more-menu" id = "moreMenu">
-            <a href = "officer_profile.php">Profile</a>
+            <a href = "<?= $profile_link ?>">Profile</a>
             <a href = "../auth/logout.php">Logout</a>
         </div>
     </div>
@@ -174,9 +184,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class = "dashboard">
 
     <div class = "sidebar">
-        <a href = "officer_main.php">Main Menu</a>
+        <a href = "<?= $main_menu_link ?>">Main Menu</a>
         <a href = "officer_monthly_report.php">Monthly Report</a>
-        <a href = "#">Events</a>
+        <a href = "officer_event.php">Events</a>
         <a href = "../../pages/student/browse_tips.php">Smart Tips</a>
 
         <div class = "sidebar-group">
@@ -185,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href = "officer_my_quiz.php" class = "sub-link">My Quiz</a>
         </div>
 
-        <a href = "#">Forum</a>
+        <a href = "officer_forum.php">Forum</a>
         <a href = "../auth/logout.php">Logout</a>
     </div>
 

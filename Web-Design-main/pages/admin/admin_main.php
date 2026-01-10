@@ -6,7 +6,7 @@ session_start();
 
 require '../../config/db.php';
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] != 'admin') {
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../auth/login.php");
     exit();
 }
@@ -84,7 +84,7 @@ try {
         <a href = "../../pages/officer/officer_monthly_report.php">Monthly Report</a>
         <a href = "#">Events</a>
         <a href = "../../pages/student/browse_tips.php">Smart Tips</a>
-        <a href = "#">Quiz</a>
+        <a href = "../../pages/officer/officer_quiz.php">Quiz</a>
         <a href = "#">Forum</a>
         <a href = "../auth/logout.php">Logout</a>
     </div>

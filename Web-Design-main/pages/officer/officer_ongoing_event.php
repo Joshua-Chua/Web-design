@@ -62,7 +62,7 @@ $result = mysqli_query($conn, $query);
 
     <div class = "sidebar">
         <a href = "officer_main.php">Main Menu</a>
-        <a href = "#">Monthly Report</a>
+        <a href = "officer_monthly_report.php">Monthly Report</a>
 
         <div class = "sidebar-group">
         <a href = "officer_event.php" class = "active">Events</a>
@@ -71,7 +71,7 @@ $result = mysqli_query($conn, $query);
         <a href="officer_ongoing_event.php"class = "sub-link active">Ongoing Events</a>
         </div>
 
-        <a href = "#">Smart Tips</a>
+        <a href = "../../pages/student/browse_tips.php">Smart Tips</a>
         <a href = "officer_quiz.php">Quiz</a>
         <a href = "officer_forum.php">Forum</a>
         <a href = "../auth/logout.php">Logout</a>
