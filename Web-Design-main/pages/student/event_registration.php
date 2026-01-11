@@ -23,7 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register_event'])) {
     $check_result = mysqli_query($conn, $check_sql);
 
     if (mysqli_num_rows($check_result) == 0) {
-        // Insert into registration table; attendance defaults to 0
         $reg_sql = "INSERT INTO registration (student_id, event_id, attendance) VALUES ('$student_id', '$event_id', 0)";
         if (mysqli_query($conn, $reg_sql)) {
             $msg = "success";
@@ -35,8 +34,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register_event'])) {
     }
 }
 
-// 3. Fetch approved events from the 'event' table
-$query = "SELECT * FROM event ORDER BY date ASC";
+// 3. FIXED QUERY: Joining with 'proposal' to access the 'date' column for sorting
+$query = "SELECT e.*, p.date, p.time, p.location, p.event_name, p.picture 
+          FROM event e
+          INNER JOIN proposal p ON e.proposal_id = p.proposal_id 
+          ORDER BY p.date ASC";
+          
 $result = mysqli_query($conn, $query);
 ?>
 
@@ -153,7 +156,6 @@ $result = mysqli_query($conn, $query);
 </div>
 
 <script>
-// 1. Hide alert messages after 5 seconds
 window.onload = function() {
     const alerts = document.querySelectorAll('.alert-success, .alert-warning');
     alerts.forEach(function(alert) {
@@ -165,7 +167,6 @@ window.onload = function() {
     });
 };
 
-// 2. Toggle Sidebar Dropdowns
 function toggleDropdown(id, element) {
     var menu = document.getElementById(id);
     var arrow = element.querySelector('.arrow');
@@ -178,7 +179,6 @@ function toggleDropdown(id, element) {
     }
 }
 
-// 3. Toggle More Menu
 document.getElementById('moreBtn').onclick = function() {
     var menu = document.getElementById('moreMenu');
     menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
