@@ -168,7 +168,7 @@
     padding: 50px !important;
     color: #b2bec3;
     background: transparent !important;
-    box-shadow: none !important;
+    box-shadow: none;
 }
 
 .img-wrapper {

@@ -10,38 +10,37 @@ if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'admin' && $_SESSION['ro
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     $proposal_id = $_POST['proposal_id'];
-    $decision = $_POST['action']; // "Approved" or "Rejected"
+    $decision = $_POST['action']; 
     
-    // 1. Start Transaction to ensure all tables update together
     $conn->begin_transaction();
 
     try {
-        // Step A: Update the proposal status
+        // Step A: Update proposal status
         $stmt_update = $conn->prepare("UPDATE `proposal` SET `status` = ? WHERE `proposal_id` = ?");
         $stmt_update->bind_param("si", $decision, $proposal_id);
         $stmt_update->execute();
 
         if ($decision === "Approved") {
-            // Step B: Record the Approval
             $admin_id = $_SESSION['user_id']; 
+            
+            // Step B: Record Approval FIRST (Generates the approval_id)
             $stmt_approval = $conn->prepare("INSERT INTO `approval` (`proposal_id`, `officer_id`, `approval_decision`, `approval_date`) VALUES (?, ?, 'Approved', NOW())");
             
             if (!$stmt_approval) {
-                throw new Exception("Prepare failed for Approval: " . $conn->error);
+                throw new Exception("Approval Table Error: " . $conn->error);
             }
 
             $stmt_approval->bind_param("ii", $proposal_id, $admin_id);
             $stmt_approval->execute();
             $approval_id = $conn->insert_id; 
 
-            // Step C: Fetch full proposal details to move to the event table
+            // Step C: Fetch Proposal Data
             $fetch_query = $conn->prepare("SELECT * FROM `proposal` WHERE `proposal_id` = ?");
             $fetch_query->bind_param("i", $proposal_id);
             $fetch_query->execute();
             $proposal_data = $fetch_query->get_result()->fetch_assoc();
 
-            // Step D: Insert into 'event' table
-            // Note: We reference proposal_id and approval_id to link back to history
+            // Step D: Insert into Event table (Links to approval_id)
             $stmt_event = $conn->prepare("INSERT INTO `event` (`approval_id`, `proposal_id`, `event_name`, `event_description`, `date`, `time`, `location`, `picture`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt_event->bind_param("iissssss", 
                 $approval_id, 
@@ -56,13 +55,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
             $stmt_event->execute();
         }
 
-        // Commit transaction
         $conn->commit();
         $_SESSION['message'] = "Event has been " . strtolower($decision) . " successfully.";
 
     } catch (Exception $e) {
         $conn->rollback();
-        die("DATABASE ERROR: " . $e->getMessage());
+        $_SESSION['error'] = "DATABASE ERROR: " . $e->getMessage();
     }
     
     header("Location: " . $_SERVER['PHP_SELF']);
@@ -86,8 +84,10 @@ $result = $stmt_fetch->get_result();
     <link rel="stylesheet" href="../../assets/css/style.css">
     <link rel="stylesheet" href="../../assets/css/officer/officer_main.css">
     <link rel="stylesheet" href="../../assets/css/admin/admin_event.css">
+    <link rel="stylesheet" href="../../assets/css/officer/officer_profile.css">
 </head>
 <body>
+
 <div class="topbar">
     <img src="../../assets/images/menu-icon.png" class="menu-btn" id="menuBtn">
     <span class="page-title">Admin/Pending Approval</span>
@@ -107,7 +107,11 @@ $result = $stmt_fetch->get_result();
 <div class="dashboard">
     <div class="sidebar">
         <a href="admin_main.php">Main Menu</a>
-        <a href="admin_approval_event.php" class="active">Pending Approvals</a>
+        <a href="../../pages/officer/officer_monthly_report.php">Monthly Report</a>
+        <a href="admin_approval_event.php" class="active">Events</a>
+        <a href="../../pages/student/browse_tips.php">Smart Tips</a>
+        <a href="../../pages/officer/officer_quiz.php">Quiz</a>
+        <a href="#">Forum</a>
         <a href="../auth/logout.php">Logout</a>
     </div>
 
@@ -115,41 +119,59 @@ $result = $stmt_fetch->get_result();
         <h2>Event Approval Queue</h2>
         
         <?php if (isset($_SESSION['message'])): ?>
-            <div class="alert-success" style="padding:15px; background:#d4edda; color:#155724; border-radius:8px; margin-bottom:20px;">
-                ✅ <?php echo $_SESSION['message']; unset($_SESSION['message']); ?>
+            <div class="alert-success">✅ <?php echo $_SESSION['message']; unset($_SESSION['message']); ?></div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['error'])): ?>
+            <div class="alert-error" style="padding:15px; background:#f8d7da; color:#721c24; border-radius:8px; margin-bottom:20px;">
+                ❌ <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
             </div>
         <?php endif; ?>
 
-        <table class="status-table" style="width:100%; border-collapse:collapse; background:white; border-radius:10px; overflow:hidden;">
-            <thead style="background:#004684; color:white;">
-                <tr>
-                    <th>Preview</th>
-                    <th>Details</th>
-                    <th>Management</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php while ($row = $result->fetch_assoc()): ?>
-                <tr style="border-bottom:1px solid #eee;">
-                    <td style="padding:15px; width:150px;">
-                        <img src="../../assets/images/proposals/<?php echo $row['picture']; ?>" style="width:100px; height:70px; object-fit:cover; border-radius:5px;">
-                    </td>
-                    <td style="padding:15px;">
-                        <strong><?php echo htmlspecialchars($row['event_name']); ?></strong><br>
-                        <small>📅 <?php echo $row['date']; ?> | 📍 <?php echo htmlspecialchars($row['location']); ?></small>
-                    </td>
-                    <td style="padding:15px;">
-                        <form method="POST">
-                            <input type="hidden" name="proposal_id" value="<?php echo $row['proposal_id']; ?>">
-                            <button type="submit" name="action" value="Approved" style="background:#28a745; color:white; border:none; padding:8px 15px; cursor:pointer; border-radius:4px;">Approve</button>
-                            <button type="submit" name="action" value="Rejected" style="background:#dc3545; color:white; border:none; padding:8px 15px; cursor:pointer; border-radius:4px;">Reject</button>
-                        </form>
-                    </td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
+        <div class="status-table-container">
+            <table class="status-table">
+                <thead>
+                    <tr>
+                        <th class="col-photo">Preview</th>
+                        <th class="col-info">Details</th>
+                        <th class="col-action">Management</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if ($result->num_rows > 0): ?>
+                        <?php while ($row = $result->fetch_assoc()): ?>
+                        <tr>
+                            <td class="col-photo">
+                                <div class="img-wrapper">
+                                    <img src="../../assets/images/proposals/<?php echo htmlspecialchars($row['picture']); ?>" class="table-img">
+                                </div>
+                            </td>
+                            <td class="col-info">
+                                <span class="event-name"><?php echo htmlspecialchars($row['event_name']); ?></span>
+                                <div class="event-meta-grid">
+                                    <span>📅 <?php echo $row['date']; ?></span>
+                                    <span>📍 <?php echo htmlspecialchars($row['location']); ?></span>
+                                </div>
+                            </td>
+                            <td class="col-action">
+                                <form method="POST" class="action-buttons">
+                                    <input type="hidden" name="proposal_id" value="<?php echo $row['proposal_id']; ?>">
+                                    <button type="submit" name="action" value="Approved" class="btn-approve">Approve</button>
+                                    <button type="submit" name="action" value="Rejected" class="btn-reject">Reject</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="3" class="no-data">No pending proposals found.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+
 </body>
 </html>

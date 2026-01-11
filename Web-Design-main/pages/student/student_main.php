@@ -106,14 +106,14 @@ if ($result && mysqli_num_rows($result) == 1) {
                 Events <span class="arrow">&#9662;</span>
             </a>
             <div id="eventMenu" class="dropdown-container" style="display: none; flex-direction: column; padding-left: 20px; background: rgba(0,0,0,0.05);">
-                <a href="#" style="font-size: 0.9em;">Event Registration</a>
-                <a href="#" style="font-size: 0.9em;">Upcoming Event</a>
+                <a href="event_registration.php" style="font-size: 0.9em;">Event Registration</a>
+                <a href="upcoming_event.php" style="font-size: 0.9em;">Upcoming Event</a>
             </div>
             
             <a href = "browse_tips.php">Smart Tips</a>
             <a href = "student_quiz.php">Quiz</a>
             <a href = "student_achievement.php">Achievement</a>
-            <a href = "#">Forum</a>
+            <a href = "student_forum.php">Forum</a>
         <?php endif; ?>
 
 

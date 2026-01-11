@@ -71,7 +71,7 @@ try {
         <img src = "../../assets/images/more-icon.png" class = "more-btn" id = "moreBtn">
 
         <div class = "more-menu" id = "moreMenu">
-            <a href = "officer_profile.php">Profile</a>
+            <a href = "admin_profile.php">Profile</a>
             <a href = "../auth/logout.php">Logout</a>
         </div>
     </div>

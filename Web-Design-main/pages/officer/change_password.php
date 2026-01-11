@@ -2,7 +2,7 @@
 session_start();
 require '../../config/db.php';
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'officer') {
+if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['officer', 'admin'])) {
     header("Location: ../auth/login.php");
     exit();
 }

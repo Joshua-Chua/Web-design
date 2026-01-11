@@ -92,7 +92,7 @@ try {
             <a href="../officer/officer_my_quiz.php" style="font-size: 0.9em;">My Quiz</a>
         </div>
 
-        <a href = "#">Forum</a>
+        <a href = "student_forum.php">Forum</a>
         <a href = "../auth/logout.php">Logout</a>
     </div>
 
@@ -113,7 +113,7 @@ try {
 
             <!-- Change password button -->
             <div class = "change-password-btn">
-                <a href = "../student/change_password.php"><button>Change Password</button></a>
+                <a href = "../officer/change_password.php"><button>Change Password</button></a>
             </div>
         </div>
     </div>
