@@ -324,7 +324,6 @@ try {
         <div class="empty-state">
             <img src="../../assets/images/empty-achievement.png" alt="No Achievements">
             <h3>No Achievements Available</h3>
-            <p>Complete quizzes to unlock achievements!</p>
         </div>
         <?php endif; ?>
     </div>
