@@ -223,11 +223,36 @@ class AchievementSystem {
     /* Check event participation achievements */
     private function checkEventAchievement($achievement) {
         try {
-            // This will be implemented later
-            // For now, return false
-            return false;
+            // Count how many events the user has attended with status = 'True'
+            $attended_events_count = $this->getAttendedEventsCount();
+            
+            // Check if user meets or exceeds requirement
+            return $attended_events_count >= $achievement['requirement_value'];
         } catch (Exception $e) {
             throw new Exception("Failed to check event achievement: " . $e->getMessage());
+        }
+    }
+    
+    /* Get count of events attended by user */
+    private function getAttendedEventsCount() {
+        try {
+            // Assuming the attendance table has columns: user_id, status (where 'True' means attended)
+            $query = "SELECT COUNT(*) as attended_count FROM attendance 
+                     WHERE user_id = ? AND status = 'True'";
+            
+            $stmt = $this->conn->prepare($query);
+            if (!$stmt) {
+                throw new Exception("Failed to prepare statement: " . $this->conn->error);
+            }
+            $stmt->bind_param("i", $this->user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $data = $result->fetch_assoc();
+            $stmt->close();
+            
+            return $data['attended_count'] ?? 0;
+        } catch (Exception $e) {
+            throw new Exception("Failed to get attended events count: " . $e->getMessage());
         }
     }
     

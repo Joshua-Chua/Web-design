@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Jan 10, 2026 at 04:46 AM
+-- Generation Time: Jan 11, 2026 at 11:36 AM
 -- Server version: 9.1.0
 -- PHP Version: 8.3.14
 
@@ -132,7 +132,7 @@ INSERT INTO `carbon_emission` (`emission_id`, `month`, `year`, `electricity_usag
 (11, 'October', 2025, 2405.11, 721.53, 721.53, 481.02, 601.28, 601.28, '2025-01-31 23:59:59'),
 (12, 'November', 2025, 2178.78, 653.63, 653.63, 435.76, 544.70, 544.70, '2025-01-31 23:59:59'),
 (13, 'December', 2025, 1378.25, 413.48, 413.48, 275.65, 344.56, 344.56, '2025-01-31 23:59:59'),
-(14, 'January', 2026, 2201.83, 660.55, 656.87, 444.13, 550.49, 550.49, '2026-01-31 23:59:59');
+(14, 'January', 2026, 2207.66, 662.30, 658.33, 445.59, 551.95, 551.95, '2026-01-31 23:59:59');
 
 -- --------------------------------------------------------
 
@@ -183,7 +183,14 @@ CREATE TABLE IF NOT EXISTS `login_streak` (
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`login_streak_id`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `login_streak`
+--
+
+INSERT INTO `login_streak` (`login_streak_id`, `user_id`, `last_login_date`, `current_streak_days`, `created_at`, `updated_at`) VALUES
+(1, 2, '2026-01-11', 1, '2026-01-11 09:24:43', '2026-01-11 09:24:43');
 
 -- --------------------------------------------------------
 
@@ -339,7 +346,14 @@ CREATE TABLE IF NOT EXISTS `quiz_attempt` (
   PRIMARY KEY (`attempt_id`),
   KEY `user_id` (`user_id`),
   KEY `quiz_id` (`quiz_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `quiz_attempt`
+--
+
+INSERT INTO `quiz_attempt` (`attempt_id`, `user_id`, `quiz_id`, `score`, `quiz_completed`, `attempted_count`, `attempted_date`) VALUES
+(2, 2, 2, 0.00, 'Not Completed', 1, '2026-01-11 17:25:02');
 
 -- --------------------------------------------------------
 
@@ -416,8 +430,8 @@ CREATE TABLE IF NOT EXISTS `smart_tips` (
 --
 
 INSERT INTO `smart_tips` (`tip_id`, `title`, `content`, `thumbnail`, `created_by`, `created_at`) VALUES
-(1, 'Turn off lights', 'Turn off lights when not in use to save energy.', NULL, 1, '2025-01-01 10:00:00'),
-(2, 'Unplug devices', 'Unplug chargers and electronics when they are fully charged or not in use.', NULL, 1, '2025-01-02 14:30:00');
+(1, 'Turn off lights', 'Turn off lights when not in use to save energy.', 'tip_69637ee677588.jpg', 1, '2025-01-01 10:00:00'),
+(2, 'Unplug devices', 'Unplug chargers and electronics when they are fully charged or not in use.', 'tip_69637ebb1e486.jpg', 1, '2025-01-02 14:30:00');
 
 -- --------------------------------------------------------
 
@@ -484,7 +498,14 @@ CREATE TABLE IF NOT EXISTS `user_achievement` (
   PRIMARY KEY (`user_achievement_id`),
   KEY `user_id` (`user_id`),
   KEY `achievement_id` (`achievement_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `user_achievement`
+--
+
+INSERT INTO `user_achievement` (`user_achievement_id`, `user_id`, `achievement_id`, `date_awarded`) VALUES
+(1, 2, 2, '2026-01-11 17:27:20');
 
 --
 -- Constraints for dumped tables
