@@ -1,0 +1,193 @@
+/* Table Container */
+.status-table-container {
+    margin: 20px 0;
+    overflow-x: auto;
+}
+
+.status-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px; /* Creates the 'card' gap between rows */
+}
+
+.status-table thead {
+    background-color: #2c3e50; 
+}
+
+.status-table th {
+    padding: 18px 20px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1.2px;
+    border: none;
+}
+
+.status-table thead tr th:first-child { border-radius: 8px 0 0 0; }
+.status-table thead tr th:last-child { border-radius: 0 8px 0 0; }
+
+.col-photo { width: 15%; }
+.col-info  { width: 35%; }
+.col-desc  { width: 30%; }
+.col-action { width: 20%; text-align: center; }
+
+
+/* Row Styling */
+.status-table tbody tr {
+    background-color: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    transition: transform 0.2s ease;
+}
+
+.status-table tbody tr:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.status-table td {
+    padding: 15px 20px;
+    vertical-align: middle;
+}
+
+/* Logical Photo Sizing */
+.table-img {
+    width: 100px;
+    height: 70px;
+    object-fit: cover; /* Prevents stretching */
+    border-radius: 6px;
+    border: 1px solid #eee;
+    display: block;
+}
+
+.event-title {
+    margin: 0 0 8px 0;
+    font-size: 1.1rem;
+    color: #1a1a1a;
+    font-weight: 700;
+}
+
+.event-name {
+    display: block;
+    font-weight: 700;
+    color: #2d3436;
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.event-meta {
+    font-size: 0.85rem;
+    color: #636e72;
+}
+
+.event-meta-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.85rem;
+    color: #636e72;
+}
+
+.event-meta-grid span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #f1f2f6;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.event-description {
+    max-width: 250px;
+    font-size: 0.9rem;
+    color: #444;
+    line-height: 1.4;
+}
+
+
+.approve-btn, .reject-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-approve {
+    background-color: #28a745; 
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-approve:hover {
+    background-color: #218838;
+}
+
+.btn-reject {
+    background-color: #dc3545; /* Soft Red */
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-reject:hover {
+    background-color: #c82333;
+}
+
+.action-buttons {
+    display: flex;       /* Enables flexbox layout */
+    gap: 12px;           /* This creates the physical gap between the buttons */
+    justify-content: center; /* Keeps the buttons centered in the table cell */
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border: 1px solid #c3e6cb;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* No Data State */
+.no-data {
+    text-align: center;
+    padding: 50px !important;
+    color: #b2bec3;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.img-wrapper {
+    width: 110px;
+    height: 75px;
+    overflow: hidden;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Description Text */
+.description-text {
+    font-size: 0.9rem;
+    color: #57606f;
+    line-height: 1.5;
+}
