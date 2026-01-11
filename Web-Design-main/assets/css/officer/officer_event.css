@@ -1,0 +1,316 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6; /* Matching the content background */
+}
+
+.dashboard {
+    display: flex;
+    min-height: 100vh; /* Forces the container to be at least full screen height */
+    background-color: #f8f9fa;
+}
+
+.Event-header {
+    width: 100%;
+    max-width: 800px; /* Matches form width */
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+/* Sidebar should take full height and not shrink */
+.sidebar {
+    width: 250px;
+    background-color: #f8f9fa; /* Use your sidebar background color */
+    flex-shrink: 0; 
+    border-right: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-group .sub-link {
+    padding-left: 45px;
+    font-size: 13px;
+    background: #eef2f7;
+    color: #444;
+}
+
+.sidebar .sub-link:hover {
+    background: #2c7be5;
+    color: #fff;
+}
+
+.sidebar .sub-link.active {
+    background: #2c7be5;
+    color: #fff;
+}
+
+.content.event-page {
+    flex-grow: 1; /* Makes the content area take up the remaining width */
+    padding: 40px 20px;
+    background-color: #f4f7f6;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Form Container */
+.form-container {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    margin-top: 15px;
+    max-width: 1500px;
+    width: 100%;
+
+}
+
+/* Layout for rows (2 columns) */
+.form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+/* Individual Groups */
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.form-group input, 
+.form-group textarea {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box; /* Ensures padding doesn't affect width */
+}
+
+/* Buttons */
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.submit-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.submit-btn:hover {
+    background-color: #0056b3;
+}
+
+.reset-btn {
+    background-color: #f8f9fa;
+    color: #333;
+    padding: 12px 25px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.reset-btn:hover {
+    background-color: #e2e6ea;
+}
+
+.approval-alert {
+    background-color: #fff4e5;
+    border-left: 5px solid #ffa117;
+    color: #663c00;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+    animation: slideIn 0.5s ease-out;
+}
+
+.alert-icon {
+    font-size: 24px;
+    margin-right: 15px;
+}
+
+.alert-content p {
+    margin: 5px 0 0 0;
+    font-size: 0.9em;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Table Container */
+.status-table-container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
+.status-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.status-table th {
+    background-color: #f4f7f6;
+    color: #333;
+    text-align: left;
+    padding: 15px;
+    font-weight: 600;
+    border-bottom: 2px solid #ddd;
+}
+
+.status-table td {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    color: #555;
+    vertical-align: middle;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    display: inline-block;
+}
+
+/* Badge Colors */
+.badge-pending {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.badge-approved {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.badge-rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.no-data {
+    text-align: center;
+    color: #999;
+    padding: 30px !important;
+}
+
+/* Image Styling in Table */
+.table-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover; /* Keeps aspect ratio while filling the box */
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.no-img-placeholder {
+    width: 60px;
+    height: 60px;
+    background-color: #f0f0f0;
+    color: #888;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* Adjust vertical alignment for better look */
+.status-table td {
+    vertical-align: middle;
+}
+
+/* Dashboard height fix */
+.dashboard {
+    display: flex;
+    min-height: calc(100vh - 70px); /* Fill screen height minus topbar */
+    align-items: stretch;
+}
+
+/* Card Styling */
+.ongoing-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.ongoing-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    display: flex;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.card-image img, .no-pic {
+    width: 180px;
+    height: 100%;
+    object-fit: cover;
+    background: #f4f4f4;
+}
+
+.card-details {
+    padding: 15px;
+    flex: 1;
+}
+
+.status-tag {
+    background: #28a745;
+    color: white;
+    padding: 3px 8px;
+    font-size: 11px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.card-details h3 {
+    margin: 10px 0 5px 0;
+    color: #333;
+}
+
+.event-meta {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.6;
+}

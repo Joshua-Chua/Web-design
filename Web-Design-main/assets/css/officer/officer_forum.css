@@ -1,0 +1,254 @@
+/* --- 1. FIXED LAYOUT STRUCTURE --- */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100vh; 
+    overflow: hidden; 
+    background-color: #f8f9fa !important; 
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden; 
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    background: #fff;
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.sidebar {
+    position: fixed;
+    top: 70px; 
+    left: 0;
+    width: 250px;
+    height: calc(100vh - 70px);
+    background: #fff;
+    z-index: 1000;
+    border-right: 1px solid #eee;
+    overflow-y: auto;
+    padding-top: 10px;
+}
+
+/* Scrollable Dashboard Area */
+.dashboard {
+    margin-left: 250px; 
+    margin-top: 70px;  /* Pushes content down so "Forum" title is visible */
+    height: calc(100vh - 70px);
+    overflow-y: auto; 
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    padding: 40px 20px;
+    width: 100%;
+    max-width: 800px; 
+    margin: 0 auto; 
+    box-sizing: border-box;
+}
+
+/* --- 2. HEADER & LIGHT BLUE BUTTON --- */
+
+.Event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #edf0f2;
+}
+
+.Event-header h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: #333;
+}
+
+.btn-add-post {
+    display: inline-flex;
+    align-items: center;
+    background-color: #3498db; /* Professional Light Blue */
+    color: #ffffff !important;
+    padding: 8px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+}
+
+.btn-add-post:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+}
+
+.plus-icon {
+    font-size: 1.2rem;
+    margin-right: 6px;
+}
+
+/* --- 3. FORUM CARD & FEED --- */
+
+.forum-container {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.post-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    border: 1px solid #f0f0f0;
+}
+
+.post-title {
+    margin: 10px 0 15px 0;
+    font-size: 1.4rem;
+    color: #004684;
+    font-weight: 700;
+}
+
+.post-img {
+    width: 100%;
+    max-height: 450px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+/* --- 4. PROFESSIONAL SMALL ACTION BUTTONS --- */
+
+.post-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #f5f5f5;
+}
+
+.action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: #666;
+    border: 1px solid #e0e0e0;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem; /* Smaller for professional look */
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background-color: #f8f9fa;
+    border-color: #3498db;
+    color: #3498db;
+}
+
+/* --- 5. COMMENT BOX WITH GAP --- */
+
+.comment-form {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* THE GAP: Spacing between box and button */
+    margin-top: 20px;
+    padding-top: 15px;
+}
+
+.comment-input {
+    flex-grow: 1;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    outline: none;
+    font-size: 0.85rem;
+    background: #f9f9f9;
+}
+
+.send-comment-btn {
+    background: #004684;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+    flex-shrink: 0; /* Prevents button from squishing */
+}
+
+.send-comment-btn:hover {
+    background: #3498db;
+    transform: scale(1.1);
+}
+
+.comment-bubble {
+    background: #f0f2f5;
+    padding: 10px 14px;
+    border-radius: 15px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+}
+
+.post-actions {
+    display: flex;
+    gap: 10px; /* Consistent spacing between React, Comments, and Report */
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+.action-btn {
+    flex: 1; /* Makes all three buttons equal width */
+    padding: 8px 5px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.report-btn {
+    color: #d9534f; /* Red text for the report action */
+    border-color: #f5c6cb;
+}
+
+.report-btn:hover {
+    background-color: #f8d7da;
+    border-color: #d9534f;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .sidebar { width: 70px; }
+    .dashboard { margin-left: 70px; }
+    .btn-text { display: none; }
+    .content { padding: 20px 10px; }
+}
